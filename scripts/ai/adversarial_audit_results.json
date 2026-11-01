@@ -1,0 +1,312 @@
+{
+  "timestamp": 1793550084.547037,
+  "total_checks": 30,
+  "passed_checks": 30,
+  "failed_checks": 0,
+  "checks": {
+    "SECTION_A_GEMINI_KEY_CONFIGURED": {
+      "section": "SECTION_A",
+      "check_id": "GEMINI_KEY_CONFIGURED",
+      "status": "PASS",
+      "detail": "Key present: True (Masked)",
+      "evidence": null
+    },
+    "SECTION_A_GEMINI_GENERATION_HONEST_STATUS": {
+      "section": "SECTION_A",
+      "check_id": "GEMINI_GENERATION_HONEST_STATUS",
+      "status": "PASS",
+      "detail": "Generation status: BLOCKED | Category: ErrorCategory.PERMISSION_DENIED. Billing required on Google project.",
+      "evidence": {
+        "status": "BLOCKED",
+        "error_category": "ErrorCategory.PERMISSION_DENIED"
+      }
+    },
+    "SECTION_A_GEMINI_CIRCUIT_BREAKER_IMMEDIATE_TRIP": {
+      "section": "SECTION_A",
+      "check_id": "GEMINI_CIRCUIT_BREAKER_IMMEDIATE_TRIP",
+      "status": "PASS",
+      "detail": "Circuit breaker state is OPEN after permanent permission failure.",
+      "evidence": {
+        "cb_status": {
+          "provider_id": "gemini_adversarial",
+          "state": "OPEN",
+          "failure_count": 1,
+          "cooldown_seconds": 30.0,
+          "seconds_since_last_failure": 0.0,
+          "last_error": "403 PERMISSION_DENIED. {'error': {'code': 403, 'message': 'The Gemini API free tier is not available for this project. To use the Gemini API, please set up billing to upgrade to the paid tier at https://aistudio.google.com/billing. For more information, see https://ai.google.dev/gemini-api/docs/troubleshooting#project-unavailable.', 'status': 'PERMISSION_DENIED'}}",
+          "last_error_category": "PERMISSION_DENIED"
+        }
+      }
+    },
+    "SECTION_B_DETERMINISTIC_FALLBACK_LATENCY": {
+      "section": "SECTION_B",
+      "check_id": "DETERMINISTIC_FALLBACK_LATENCY",
+      "status": "PASS",
+      "detail": "Fallback executed in 1.48 ms (SLA < 50ms).",
+      "evidence": {
+        "latency_ms": 1.48
+      }
+    },
+    "SECTION_B_PROVIDER_REGISTRY_HEALTH_PROBE": {
+      "section": "SECTION_B",
+      "check_id": "PROVIDER_REGISTRY_HEALTH_PROBE",
+      "status": "PASS",
+      "detail": "Discovered 4 providers in registry.",
+      "evidence": {
+        "providers": [
+          "gemini",
+          "ollama_qwen",
+          "ollama_gemma",
+          "deterministic"
+        ]
+      }
+    },
+    "SECTION_B_HONEST_PROVIDER_ATTRIBUTION": {
+      "section": "SECTION_B",
+      "check_id": "HONEST_PROVIDER_ATTRIBUTION",
+      "status": "PASS",
+      "detail": "Provider honestly attributed as 'SutraCurriculumEngine'.",
+      "evidence": {
+        "provider": "SutraCurriculumEngine",
+        "model": "ncert-class8-curriculum-v1"
+      }
+    },
+    "SECTION_C_CURRICULUM_CONCEPT_COUNT": {
+      "section": "SECTION_C",
+      "check_id": "CURRICULUM_CONCEPT_COUNT",
+      "status": "PASS",
+      "detail": "Implemented all 30 NCERT Class 8 concepts across Chapters 1 to 13 (MATH-C01 through MATH-C30).",
+      "evidence": {
+        "total_concepts": 30,
+        "concepts": [
+          "MATH-C01",
+          "MATH-C02",
+          "MATH-C03",
+          "MATH-C04",
+          "MATH-C05",
+          "MATH-C06",
+          "MATH-C07",
+          "MATH-C08",
+          "MATH-C09",
+          "MATH-C10",
+          "MATH-C11",
+          "MATH-C12",
+          "MATH-C13",
+          "MATH-C14",
+          "MATH-C15",
+          "MATH-C16",
+          "MATH-C17",
+          "MATH-C18",
+          "MATH-C19",
+          "MATH-C20",
+          "MATH-C21",
+          "MATH-C22",
+          "MATH-C23",
+          "MATH-C24",
+          "MATH-C25",
+          "MATH-C26",
+          "MATH-C27",
+          "MATH-C28",
+          "MATH-C29",
+          "MATH-C30"
+        ]
+      }
+    },
+    "SECTION_C_QUESTION_BANK_DEPTH": {
+      "section": "SECTION_C",
+      "check_id": "QUESTION_BANK_DEPTH",
+      "status": "PASS",
+      "detail": "Total questions: 81. All 30 concepts have >= 2 questions; baseline concepts have >= 5 questions.",
+      "evidence": {
+        "MATH-C01": 5,
+        "MATH-C02": 5,
+        "MATH-C03": 5,
+        "MATH-C04": 5,
+        "MATH-C05": 5,
+        "MATH-C06": 5,
+        "MATH-C07": 3,
+        "MATH-C08": 3,
+        "MATH-C09": 3,
+        "MATH-C10": 2,
+        "MATH-C11": 2,
+        "MATH-C12": 2,
+        "MATH-C13": 2,
+        "MATH-C14": 2,
+        "MATH-C15": 2,
+        "MATH-C16": 2,
+        "MATH-C17": 2,
+        "MATH-C18": 2,
+        "MATH-C19": 2,
+        "MATH-C20": 2,
+        "MATH-C21": 2,
+        "MATH-C22": 2,
+        "MATH-C23": 2,
+        "MATH-C24": 2,
+        "MATH-C25": 2,
+        "MATH-C26": 2,
+        "MATH-C27": 2,
+        "MATH-C28": 2,
+        "MATH-C29": 2,
+        "MATH-C30": 2
+      }
+    },
+    "SECTION_C_FULL_CURRICULUM_COVERAGE": {
+      "section": "SECTION_C",
+      "check_id": "FULL_CURRICULUM_COVERAGE",
+      "status": "PASS",
+      "detail": "Scope covers all 13 official NCERT Class 8 Mathematics chapters (Rational Numbers, Linear Equations, Geometry, Mensuration, Exponents, Factorisation, Graphs).",
+      "evidence": {
+        "total_chapters": 13,
+        "total_concepts": 30,
+        "total_questions": 81
+      }
+    },
+    "SECTION_D_ADAPTIVE_CONFIRM": {
+      "section": "SECTION_D",
+      "check_id": "ADAPTIVE_CONFIRM",
+      "status": "PASS",
+      "detail": "1 attempt -> LearningPathOutcome.CONFIRM",
+      "evidence": null
+    },
+    "SECTION_D_ADAPTIVE_STRETCH": {
+      "section": "SECTION_D",
+      "check_id": "ADAPTIVE_STRETCH",
+      "status": "PASS",
+      "detail": "2 correct -> LearningPathOutcome.STRETCH",
+      "evidence": null
+    },
+    "SECTION_D_ADAPTIVE_SCAFFOLD": {
+      "section": "SECTION_D",
+      "check_id": "ADAPTIVE_SCAFFOLD",
+      "status": "PASS",
+      "detail": "Assisted -> LearningPathOutcome.SCAFFOLD",
+      "evidence": null
+    },
+    "SECTION_D_ADAPTIVE_BRIDGE_BACK": {
+      "section": "SECTION_D",
+      "check_id": "ADAPTIVE_BRIDGE_BACK",
+      "status": "PASS",
+      "detail": "Prerequisite error -> LearningPathOutcome.BRIDGE_BACK to MATH-C01",
+      "evidence": null
+    },
+    "SECTION_D_ADAPTIVE_TEACHER_REVIEW": {
+      "section": "SECTION_D",
+      "check_id": "ADAPTIVE_TEACHER_REVIEW",
+      "status": "PASS",
+      "detail": "3 failures -> LearningPathOutcome.TEACHER_REVIEW",
+      "evidence": null
+    },
+    "SECTION_D_DETERMINISTIC_REPRODUCIBILITY": {
+      "section": "SECTION_D",
+      "check_id": "DETERMINISTIC_REPRODUCIBILITY",
+      "status": "PASS",
+      "detail": "Identical attempt inputs yield bit-exact outcomes and confidence scores.",
+      "evidence": null
+    },
+    "SECTION_E_MATH_VALID_TWO_STEP": {
+      "section": "SECTION_E",
+      "check_id": "MATH_VALID_TWO_STEP",
+      "status": "PASS",
+      "detail": "2x + 5 = 15: All 3 algebraic steps consistently solve to x = 5.0.",
+      "evidence": null
+    },
+    "SECTION_E_MATH_VALID_NEGATIVE_COEFF": {
+      "section": "SECTION_E",
+      "check_id": "MATH_VALID_NEGATIVE_COEFF",
+      "status": "PASS",
+      "detail": "-4x + 9 = 29: All 3 algebraic steps consistently solve to x = -5.0.",
+      "evidence": null
+    },
+    "SECTION_E_MATH_VALID_BOTH_SIDES": {
+      "section": "SECTION_E",
+      "check_id": "MATH_VALID_BOTH_SIDES",
+      "status": "PASS",
+      "detail": "5x + 2 = 3x + 10: All 3 algebraic steps consistently solve to x = 4.0.",
+      "evidence": null
+    },
+    "SECTION_E_MATH_REJECT_SIGN_ERROR": {
+      "section": "SECTION_E",
+      "check_id": "MATH_REJECT_SIGN_ERROR",
+      "status": "PASS",
+      "detail": "Flawed step detected: Algebraic transformation error: step '2x = 20' has solution 10.0, conflicting with initial root 5.0.",
+      "evidence": null
+    },
+    "SECTION_E_MATH_REJECT_ARITH_ERROR": {
+      "section": "SECTION_E",
+      "check_id": "MATH_REJECT_ARITH_ERROR",
+      "status": "PASS",
+      "detail": "Flawed step detected: Algebraic transformation error: step '3x = 4' has solution 1.3333, conflicting with initial root 6.0.",
+      "evidence": null
+    },
+    "SECTION_E_MATH_NARRATIVE_SAFE_PASS": {
+      "section": "SECTION_E",
+      "check_id": "MATH_NARRATIVE_SAFE_PASS",
+      "status": "PASS",
+      "detail": "Narrative: Single equation or conceptual narrative without step contradiction.",
+      "evidence": null
+    },
+    "SECTION_F_DATABASE_WAL_MODE": {
+      "section": "SECTION_F",
+      "check_id": "DATABASE_WAL_MODE",
+      "status": "PASS",
+      "detail": "Journal mode is wal",
+      "evidence": null
+    },
+    "SECTION_F_DATABASE_FOREIGN_KEY_INTEGRITY": {
+      "section": "SECTION_F",
+      "check_id": "DATABASE_FOREIGN_KEY_INTEGRITY",
+      "status": "PASS",
+      "detail": "FK violations: 0",
+      "evidence": null
+    },
+    "SECTION_F_ATOMIC_ONLINE_BACKUP": {
+      "section": "SECTION_F",
+      "check_id": "ATOMIC_ONLINE_BACKUP",
+      "status": "PASS",
+      "detail": "Online backup executed cleanly (135168 bytes).",
+      "evidence": null
+    },
+    "SECTION_G_STUDENT_BLOCKED_TEACHER_ROUTE": {
+      "section": "SECTION_G",
+      "check_id": "STUDENT_BLOCKED_TEACHER_ROUTE",
+      "status": "PASS",
+      "detail": "Status: 403",
+      "evidence": null
+    },
+    "SECTION_G_STUDENT_BLOCKED_EDUCATOR_AI": {
+      "section": "SECTION_G",
+      "check_id": "STUDENT_BLOCKED_EDUCATOR_AI",
+      "status": "PASS",
+      "detail": "Status: 403",
+      "evidence": null
+    },
+    "SECTION_G_TEACHER_AUTHORIZED_ROUTE": {
+      "section": "SECTION_G",
+      "check_id": "TEACHER_AUTHORIZED_ROUTE",
+      "status": "PASS",
+      "detail": "Status: 200",
+      "evidence": null
+    },
+    "SECTION_G_TAMPERED_TOKEN_REJECTED": {
+      "section": "SECTION_G",
+      "check_id": "TAMPERED_TOKEN_REJECTED",
+      "status": "PASS",
+      "detail": "Status: 401",
+      "evidence": null
+    },
+    "SECTION_G_CROSS_STUDENT_CONVERSATION_ISOLATION": {
+      "section": "SECTION_G",
+      "check_id": "CROSS_STUDENT_CONVERSATION_ISOLATION",
+      "status": "PASS",
+      "detail": "Status: 403",
+      "evidence": null
+    },
+    "SECTION_G_SECRET_REDACTION_IN_CONFIG": {
+      "section": "SECTION_G",
+      "check_id": "SECRET_REDACTION_IN_CONFIG",
+      "status": "PASS",
+      "detail": "SecretStr redacted in safe_dump().",
+      "evidence": null
+    }
+  }
+}

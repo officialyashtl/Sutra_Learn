@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: sutra-learn-backend
+    env: python
+    region: oregon
+    plan: standard # Required for persistent disks on Render
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /api/v1/health
+    disk:
+      name: sutra-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SUTRA_DB_PATH
+        value: /var/data/sutra_learn.db
+      - key: SUTRA_SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: "https://sutra-learn.vercel.app,http://localhost:5173"
+      - key: GEMINI_API_KEY
+        sync: false

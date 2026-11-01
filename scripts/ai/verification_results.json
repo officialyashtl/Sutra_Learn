@@ -1,0 +1,92 @@
+{
+    "suite":  "SUTRA LEARN PHOENIX 10,000",
+    "timestamp":  "2026-11-01T15:09:13.6123653Z",
+    "total_duration_ms":  86509,
+    "overall_status":  "SUCCESS",
+    "stages":  {
+                   "01_ENV":  {
+                                  "stage":  "Environment Configuration \u0026 Secret Protection",
+                                  "status":  "PASS",
+                                  "latency_ms":  3975,
+                                  "detail":  "Execution completed cleanly with exit code 0.",
+                                  "required":  true
+                              },
+                   "02_OLLAMA":  {
+                                     "stage":  "Ollama Local Daemon \u0026 Model Tags",
+                                     "status":  "PASS",
+                                     "latency_ms":  386,
+                                     "detail":  "Execution completed cleanly with exit code 0.",
+                                     "required":  true
+                                 },
+                   "03_GEMINI":  {
+                                     "stage":  "Gemini API Auth \u0026 Circuit Classification",
+                                     "status":  "PASS",
+                                     "latency_ms":  2797,
+                                     "detail":  "Execution completed cleanly with exit code 0.",
+                                     "required":  false
+                                 },
+                   "04_QWEN":  {
+                                   "stage":  "Qwen 3.5 4B Live Reasoning Inference",
+                                   "status":  "PASS",
+                                   "latency_ms":  29821,
+                                   "detail":  "Execution completed cleanly with exit code 0.",
+                                   "required":  true
+                               },
+                   "05_GEMMA":  {
+                                    "stage":  "Gemma 4 E2B Live Direct Inference",
+                                    "status":  "PASS",
+                                    "latency_ms":  14032,
+                                    "detail":  "Execution completed cleanly with exit code 0.",
+                                    "required":  true
+                                },
+                   "06_FALLBACK":  {
+                                       "stage":  "Deterministic Fallback \u0026 Step Validation",
+                                       "status":  "PASS",
+                                       "latency_ms":  1085,
+                                       "detail":  "Execution completed cleanly with exit code 0.",
+                                       "required":  true
+                                   },
+                   "07_BACKEND_AI":  {
+                                         "stage":  "AI FastAPI Router \u0026 Orchestrator Pipeline",
+                                         "status":  "PASS",
+                                         "latency_ms":  23354,
+                                         "detail":  "Execution completed cleanly with exit code 0.",
+                                         "required":  true
+                                     },
+                   "08_MATH_LOGIC":  {
+                                         "stage":  "Algebraic Verification \u0026 Adaptive Engine Rules",
+                                         "status":  "PASS",
+                                         "latency_ms":  653,
+                                         "detail":  "Execution completed cleanly with exit code 0.",
+                                         "required":  true
+                                     },
+                   "09_PYTEST":  {
+                                     "stage":  "Backend Pytest Suite (35 Cases)",
+                                     "status":  "PASS",
+                                     "latency_ms":  3753,
+                                     "detail":  "Execution completed cleanly with exit code 0.",
+                                     "required":  true
+                                 },
+                   "10_E2E":  {
+                                  "stage":  "Complete E2E Verification Suite (14 Stages)",
+                                  "status":  "PASS",
+                                  "latency_ms":  2630,
+                                  "detail":  "Execution completed cleanly with exit code 0.",
+                                  "required":  true
+                              },
+                   "11_LINT":  {
+                                   "stage":  "Frontend Oxlint Verification",
+                                   "status":  "PASS",
+                                   "latency_ms":  1194,
+                                   "detail":  "Execution completed cleanly with exit code 0.",
+                                   "required":  true
+                               },
+                   "12_BUILD":  {
+                                    "stage":  "Frontend Production Build (TypeScript + Vite)",
+                                    "status":  "PASS",
+                                    "latency_ms":  2731,
+                                    "detail":  "Execution completed cleanly with exit code 0.",
+                                    "required":  true
+                                }
+               }
+}
