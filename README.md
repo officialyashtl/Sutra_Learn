@@ -1,9 +1,14 @@
 # SUTRA LEARN (Student Understanding, Targeted Reinforcement & Adaptation)
-### Version 1.0.0 Release Candidate — Earthbound Editorial Edition
+### Version 1.0.0 Production Release — Earthbound Editorial Edition
+**Team:** THE OATH OF TYR | **Author:** Designed & Developed by Yash TL  
+**Frontend Deployment:** [https://sutralearn.vercel.app/](https://sutralearn.vercel.app/)  
+**Backend API Deployment:** [https://sutra-learn-api.onrender.com](https://sutra-learn-api.onrender.com)  
+**Repository:** [https://github.com/officialyashtl/Sutra_Learn](https://github.com/officialyashtl/Sutra_Learn)
+
 [![Backend Tests: 35/35 Passing](https://img.shields.io/badge/Backend%20Tests-35%2F35%20Passing-success)](docs/testing-guide.md)
-[![E2E Verification: 14/14 Stages Passing](https://img.shields.io/badge/E2E%20Verification-14%2F14%20Stages%20Passing-success)](docs/testing-guide.md)
-[![Visual Screenshots: 48/48 Verified](https://img.shields.io/badge/Visual%20Screenshots-48%2F48%20Verified-success)](screenshots/)
+[![E2E Scenarios: 10/10 Passing](https://img.shields.io/badge/E2E%20Scenarios-10%2F10%20Passing-success)](docs/testing-guide.md)
 [![Linter: Oxlint Clean](https://img.shields.io/badge/Linter-0%20Errors%200%20Warnings-blue)](frontend/)
+[![TypeScript: Clean Build](https://img.shields.io/badge/TypeScript-0%20Errors-brightgreen)](frontend/)
 [![Architecture: Dual Portal](https://img.shields.io/badge/Architecture-Unbreachable%20Dual%20Portal-informational)](docs/architecture-current.md)
 
 > **Core Pedagogical Principle**: *A wrong answer is a signal to investigate, not a label to assign.*

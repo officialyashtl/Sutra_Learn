@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import type { Learner } from '../types';
-import { loginWithCredentials, authenticatePersona } from '../services/auth';
+import { loginWithCredentials } from '../services/auth';
 
 interface StudentLoginProps {
   apiBaseUrl: string;
@@ -43,27 +43,7 @@ export function StudentLogin({
         session.access_token
       );
     } catch (err: any) {
-      // Fallback for evaluator convenience: check if persona exists in demo registry
-      try {
-        const token = await authenticatePersona(apiBaseUrl, username.trim());
-        const meRes = await fetch(`${apiBaseUrl}/api/v1/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (meRes.ok) {
-          const meData = await meRes.json();
-          if (meData.role !== 'student') {
-            throw new Error('This account holds educator privileges. Please use the Educator Workspace login.');
-          }
-          onLoginSuccess(
-            { id: meData.id, name: meData.name, grade: meData.grade, role: 'student' },
-            token
-          );
-          return;
-        }
-      } catch {
-        // preserve original error
-      }
-      setError(err.message || 'Authentication failed. Please verify credentials.');
+      setError(err.message || 'Authentication failed. Please verify your student identifier and password.');
     } finally {
       setLoading(false);
     }

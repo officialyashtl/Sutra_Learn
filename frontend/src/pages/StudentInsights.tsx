@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import type { Concept, Learner, LearnerMetrics } from '../types';
+import { clearStoredAuth } from '../services/auth';
+import { AUTH_EXPIRED_EVENT } from '../api/client';
+import type { Concept, Learner, LearnerMetrics, SpacedRetrievalQueue } from '../types';
 
 interface StudentInsightsProps {
   learner: Learner;
@@ -21,6 +23,7 @@ export function StudentInsights({
   onPracticeConcept: _onPracticeConcept,
 }: StudentInsightsProps) {
   const [metrics, setMetrics] = useState<LearnerMetrics | null>(null);
+  const [spacedQueue, setSpacedQueue] = useState<SpacedRetrievalQueue | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,14 +33,25 @@ export function StudentInsights({
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`${apiBaseUrl}/api/v1/learners/${learner.id}/metrics`, {
-          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
-        });
+        const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+        const res = await fetch(`${apiBaseUrl}/api/v1/learners/${learner.id}/metrics`, { headers });
+        if (res.status === 401) {
+          clearStoredAuth();
+          if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+          return;
+        }
         if (!res.ok) {
           throw new Error(`Failed to load student analytics (HTTP ${res.status})`);
         }
         const data: LearnerMetrics = await res.json();
         if (isMounted) setMetrics(data);
+
+        // Fetch spaced retrieval
+        const srRes = await fetch(`${apiBaseUrl}/api/v1/learners/${learner.id}/spaced-retrieval`, { headers });
+        if (srRes.ok && isMounted) {
+          const srData = await srRes.json();
+          setSpacedQueue(srData);
+        }
       } catch (err: any) {
         if (isMounted) setError(err.message || 'Error fetching student insights.');
       } finally {
@@ -473,6 +487,84 @@ export function StudentInsights({
               </span>
             </div>
           </div>
+        </section>
+
+        {/* SECTION 13: Spaced Retrieval & Long-Term Memory Trajectory */}
+        <section className="editorial-card" style={{ padding: 'var(--space-6)' }}>
+          <div className="editorial-kicker">SECTION 13 &bull; COGNITIVE RETENTION</div>
+          <h3 className="serif-title" style={{ fontSize: '20px', color: 'var(--sutra-espresso)', marginTop: '2px' }}>
+            Spaced Retrieval &amp; Long-Term Memory Trajectory
+          </h3>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            Mathematical Ebbinghaus forgetting curve modeling R(t) = exp(-t / S) and SM-2 stability schedules.
+          </p>
+
+          {spacedQueue && spacedQueue.review_queue.length > 0 ? (
+            <div style={{ marginTop: 'var(--space-4)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
+                <div style={{ backgroundColor: 'var(--surface-warm)', padding: 'var(--space-3)', borderRadius: 'var(--radius-sm)' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Average Retention</span>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--sutra-espresso)' }}>
+                    {Math.round(spacedQueue.retention_average * 100)}%
+                  </div>
+                </div>
+                <div style={{ backgroundColor: 'var(--surface-warm)', padding: 'var(--space-3)', borderRadius: 'var(--radius-sm)' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Review Urgency</span>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: spacedQueue.due_count > 0 ? 'var(--feedback-warning)' : 'var(--feedback-success)' }}>
+                    {spacedQueue.due_count} Concepts Due
+                  </div>
+                </div>
+              </div>
+
+              <div className="editorial-table-wrapper">
+                <table className="editorial-table">
+                  <thead>
+                    <tr>
+                      <th>Concept</th>
+                      <th>Days Elapsed</th>
+                      <th>Stability</th>
+                      <th>Est. Retention</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {spacedQueue.review_queue.map((item) => (
+                      <tr key={item.concept_id}>
+                        <td><strong>{item.concept_title}</strong></td>
+                        <td className="tabular-nums">{item.days_elapsed}d</td>
+                        <td className="tabular-nums">{item.stability_days}d</td>
+                        <td className="tabular-nums" style={{ fontWeight: 600 }}>
+                          {Math.round(item.estimated_retention * 100)}%
+                        </td>
+                        <td>
+                          <span className={`status-pill ${item.retrieval_status === 'CONSOLIDATED' ? 'mastered' : 'needs_reinforcement'}`}>
+                            {item.retrieval_status.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            style={{ fontSize: '12px', padding: '3px 8px' }}
+                            onClick={() => _onPracticeConcept(item.concept_id)}
+                          >
+                            Review &rarr;
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginTop: 'var(--space-4)', backgroundColor: 'var(--surface-warm)', padding: 'var(--space-4)', borderRadius: 'var(--radius-sm)' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
+                Complete concept assessment sessions to initialize personalized forgetting curve tracking.
+              </p>
+            </div>
+          )}
         </section>
 
       </div>

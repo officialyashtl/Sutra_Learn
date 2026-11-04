@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { clearStoredAuth } from '../services/auth';
+import { AUTH_EXPIRED_EVENT } from '../api/client';
 import type { Concept, ConceptProgress, Learner, StudentAttemptHistoryItem, LearnerMetrics } from '../types';
 
 interface StudentProgressProps {
@@ -33,6 +35,11 @@ export function StudentProgress({
 
         // 1. Fetch attempts
         const res = await fetch(`${apiBaseUrl}/api/v1/learners/${learner.id}/attempts`, { headers });
+        if (res.status === 401) {
+          clearStoredAuth();
+          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+          return;
+        }
         if (res.ok && isMounted) {
           const data = await res.json();
           setAttempts(data.attempts || []);

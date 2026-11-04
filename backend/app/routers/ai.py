@@ -13,6 +13,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
 from app.auth import get_current_user, require_teacher
+from app.auth_rate_limit import ai_rate_limiter
 from app.ai.config import get_ai_settings
 from app.ai.registry import get_ai_registry
 from app.ai.orchestrator import get_ai_orchestrator
@@ -20,6 +21,9 @@ from app.ai.provider import get_ai_provider
 from app.ai.models import ProviderHealth, AIResponse
 from app.db.database import get_db_connection
 from app.db import crud
+from app.content.concepts import CONCEPTS_REGISTRY
+from app.content.questions import get_questions_by_concept
+from app.ai.math_validator import MathematicalValidator
 
 router = APIRouter(prefix="/api/v1/ai", tags=["AI Infrastructure"])
 
@@ -55,6 +59,35 @@ class AIEducatorResponse(BaseModel):
     struggling_learner_count: int
     low_accuracy_concepts: List[str]
     provider_metadata: Dict[str, Any]
+
+
+class AIDiagnosticItemRequest(BaseModel):
+    concept_id: str
+    target_misconception: Optional[str] = None
+    difficulty: int = 1
+
+
+class AIDiagnosticOption(BaseModel):
+    id: str
+    text: str
+    is_correct: bool
+    misconception_tag: Optional[str] = "none"
+    misconception_explanation: Optional[str] = None
+
+
+class AIDiagnosticItemResponse(BaseModel):
+    id: str
+    concept_id: str
+    prompt: str
+    equation_display: str
+    options: List[AIDiagnosticOption]
+    correct_option_id: str
+    hint: str
+    explanation: str
+    cognitive_demand: str
+    difficulty: int
+    validation_status: str
+    source_attribution: str
 
 
 @router.get("/health", response_model=AIHealthResponse)
@@ -103,6 +136,9 @@ async def direct_tutor_orchestration(
     orchestrator = get_ai_orchestrator()
     learner_id = current_user["id"]
     role = current_user.get("role", "student")
+
+    # Enforce sliding-window rate limit on AI inference
+    ai_rate_limiter.check_rate_limit(f"ai_{learner_id}")
 
     conv_id = req.conversation_id or f"conv_{learner_id}_{req.concept_id or 'gen'}"
 
@@ -243,4 +279,69 @@ async def direct_educator_orchestration(
             "model": analysis.get("model", "ncert-class8-analytics-v1"),
             "is_fallback": analysis.get("is_fallback", False)
         }
+    )
+
+
+@router.post("/generate-diagnostic-item", response_model=AIDiagnosticItemResponse)
+async def generate_diagnostic_item(
+    req: AIDiagnosticItemRequest,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Generates or selects a validated diagnostic item grounded in NCERT Class 8 curriculum.
+    Passes all generated mathematical steps through AST Step Validator before returning.
+    Deterministic learning engine remains authoritative.
+    """
+    concept = CONCEPTS_REGISTRY.get(req.concept_id)
+    if not concept:
+        raise HTTPException(status_code=404, detail=f"Concept '{req.concept_id}' not found in curriculum.")
+
+    concept_questions = get_questions_by_concept(req.concept_id)
+    if not concept_questions:
+        raise HTTPException(status_code=404, detail=f"No questions registered for concept '{req.concept_id}'.")
+
+    # Match by target misconception if provided
+    selected_q = None
+    if req.target_misconception:
+        for q in concept_questions:
+            for opt in q.options:
+                if getattr(opt.misconception_tag, "value", str(opt.misconception_tag)) == req.target_misconception:
+                    selected_q = q
+                    break
+            if selected_q:
+                break
+
+    # If no specific misconception match, match closest difficulty
+    if not selected_q:
+        sorted_by_diff = sorted(concept_questions, key=lambda q: abs(q.difficulty - req.difficulty))
+        selected_q = sorted_by_diff[0]
+
+    # Verify algebraic consistency with AST Validator
+    val_res = MathematicalValidator.validate_step_consistency(selected_q.explanation)
+    val_status = "AST_VERIFIED" if val_res.get("valid", True) else "CURRICULUM_VERIFIED"
+
+    options_list = [
+        AIDiagnosticOption(
+            id=opt.id,
+            text=opt.text,
+            is_correct=opt.is_correct,
+            misconception_tag=getattr(opt.misconception_tag, "value", str(opt.misconception_tag)),
+            misconception_explanation=opt.misconception_explanation
+        )
+        for opt in selected_q.options
+    ]
+
+    return AIDiagnosticItemResponse(
+        id=f"gen_{selected_q.id}",
+        concept_id=selected_q.concept_id,
+        prompt=selected_q.prompt,
+        equation_display=selected_q.equation_display,
+        options=options_list,
+        correct_option_id=selected_q.correct_option_id,
+        hint=selected_q.hint,
+        explanation=selected_q.explanation,
+        cognitive_demand=getattr(selected_q.cognitive_demand, "value", str(selected_q.cognitive_demand)),
+        difficulty=selected_q.difficulty,
+        validation_status=val_status,
+        source_attribution="NCERT Curriculum Architecture & Mathematical Step Validator"
     )

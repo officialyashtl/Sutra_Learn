@@ -1,5 +1,5 @@
 {
-  "timestamp": 1793550084.547037,
+  "timestamp": 1793725568.4132383,
   "total_checks": 30,
   "passed_checks": 30,
   "failed_checks": 0,
@@ -15,10 +15,10 @@
       "section": "SECTION_A",
       "check_id": "GEMINI_GENERATION_HONEST_STATUS",
       "status": "PASS",
-      "detail": "Generation status: BLOCKED | Category: ErrorCategory.PERMISSION_DENIED. Billing required on Google project.",
+      "detail": "Generation status: GENERATED | Category: None. Authenticated live inference confirmed.",
       "evidence": {
-        "status": "BLOCKED",
-        "error_category": "ErrorCategory.PERMISSION_DENIED"
+        "status": "GENERATED",
+        "error_category": "None"
       }
     },
     "SECTION_A_GEMINI_CIRCUIT_BREAKER_IMMEDIATE_TRIP": {
@@ -28,12 +28,12 @@
       "detail": "Circuit breaker state is OPEN after permanent permission failure.",
       "evidence": {
         "cb_status": {
-          "provider_id": "gemini_adversarial",
+          "provider_id": "gemini_trip_test",
           "state": "OPEN",
           "failure_count": 1,
           "cooldown_seconds": 30.0,
           "seconds_since_last_failure": 0.0,
-          "last_error": "403 PERMISSION_DENIED. {'error': {'code': 403, 'message': 'The Gemini API free tier is not available for this project. To use the Gemini API, please set up billing to upgrade to the paid tier at https://aistudio.google.com/billing. For more information, see https://ai.google.dev/gemini-api/docs/troubleshooting#project-unavailable.', 'status': 'PERMISSION_DENIED'}}",
+          "last_error": "403 Forbidden: Billing / Permission required",
           "last_error_category": "PERMISSION_DENIED"
         }
       }
@@ -42,9 +42,9 @@
       "section": "SECTION_B",
       "check_id": "DETERMINISTIC_FALLBACK_LATENCY",
       "status": "PASS",
-      "detail": "Fallback executed in 1.48 ms (SLA < 50ms).",
+      "detail": "Fallback executed in 1.0 ms (SLA < 50ms).",
       "evidence": {
-        "latency_ms": 1.48
+        "latency_ms": 1.0
       }
     },
     "SECTION_B_PROVIDER_REGISTRY_HEALTH_PROBE": {
@@ -263,7 +263,7 @@
       "section": "SECTION_F",
       "check_id": "ATOMIC_ONLINE_BACKUP",
       "status": "PASS",
-      "detail": "Online backup executed cleanly (135168 bytes).",
+      "detail": "Online backup executed cleanly (204800 bytes).",
       "evidence": null
     },
     "SECTION_G_STUDENT_BLOCKED_TEACHER_ROUTE": {

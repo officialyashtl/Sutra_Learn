@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { clearStoredAuth } from '../services/auth';
+import { AUTH_EXPIRED_EVENT } from '../api/client';
 import type { FormEvent } from 'react';
 import type { Concept, AIMessage, AIConversation } from '../types';
+import {
+  SutraButtonLoader,
+  SutraChatLoader,
+  SutraInlineLoader,
+  SutraPageLoader,
+  SutraSessionLoader,
+} from '../components/SutraLoaders';
 
 interface StudentTutorProps {
   currentStudentId: string;
@@ -63,6 +72,12 @@ export function StudentTutor({
     label: 'CHECKING AI INFRASTRUCTURE',
     color: '#8A7A68'
   });
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [switchingSessionId, setSwitchingSessionId] = useState<string | null>(null);
+  const [isResettingSession, setIsResettingSession] = useState(false);
+  const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
+  const [sessionActionError, setSessionActionError] = useState<string | null>(null);
+  const activeSwitchRequestIdRef = useRef<number>(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -72,20 +87,42 @@ export function StudentTutor({
   const loadConversationDetail = useCallback(
     async (convId: string) => {
       if (!authToken) return;
+      const reqId = ++activeSwitchRequestIdRef.current;
+      setSwitchingSessionId(convId);
+      setSessionActionError(null);
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/tutor/conversations/${convId}`, {
+        const res = await fetch(`${apiBaseUrl}/api/v1/tutor/sessions/${convId}`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
+        if (res.status === 401) {
+          clearStoredAuth();
+          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+          return;
+        }
         if (res.ok) {
           const data = await res.json();
-          setActiveConversationId(convId);
-          setMessages(data.messages || []);
-          if (data.conversation?.concept_id) {
-            setSelectedConceptId(data.conversation.concept_id);
+          // Stale response guard: only commit state if this is still the active switch request
+          if (reqId === activeSwitchRequestIdRef.current) {
+            setActiveConversationId(convId);
+            setMessages(data.messages || []);
+            if (data.conversation?.concept_id) {
+              setSelectedConceptId(data.conversation.concept_id);
+            }
+          }
+        } else {
+          if (reqId === activeSwitchRequestIdRef.current) {
+            setSessionActionError('Failed to load this conversation.');
           }
         }
       } catch (err) {
         console.warn('Failed to load conversation detail:', err);
+        if (reqId === activeSwitchRequestIdRef.current) {
+          setSessionActionError('Network error loading conversation.');
+        }
+      } finally {
+        if (reqId === activeSwitchRequestIdRef.current) {
+          setSwitchingSessionId(null);
+        }
       }
     },
     [authToken, apiBaseUrl]
@@ -99,6 +136,11 @@ export function StudentTutor({
         const res = await fetch(`${apiBaseUrl}/api/v1/tutor/conversations`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
+        if (res.status === 401) {
+          clearStoredAuth();
+          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+          return;
+        }
         if (res.ok) {
           const data = await res.json();
           setConversations(data);
@@ -202,13 +244,89 @@ export function StudentTutor({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const handleStartNewSession = () => {
-    setActiveConversationId(null);
-    setMessages([]);
-    setInputText('');
-    setTimeout(() => {
-      textareaRef.current?.focus();
-    }, 50);
+  const handleStartNewSession = async () => {
+    if (isCreatingSession || !authToken) return;
+    setIsCreatingSession(true);
+    setSessionActionError(null);
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/v1/tutor/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          concept_id: selectedConceptId,
+          title: `${activeConcept.title} Session`,
+        }),
+      });
+
+      if (res.status === 401) {
+        clearStoredAuth();
+        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+        return;
+      }
+
+      if (res.ok) {
+        const newSession = await res.json();
+        setActiveConversationId(newSession.id);
+        setMessages([]);
+        setInputText('');
+        setRevealedHints({});
+        setConversations((prev) => [newSession, ...prev.filter((c) => c.id !== newSession.id)]);
+        setTimeout(() => {
+          textareaRef.current?.focus();
+        }, 50);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setSessionActionError(err.detail || 'Could not initialize new session.');
+      }
+    } catch (err) {
+      console.warn('Failed to create new session:', err);
+      setSessionActionError('Network error initializing new session. Your current conversation is preserved.');
+    } finally {
+      setIsCreatingSession(false);
+    }
+  };
+
+  const handlePromptClearAndRestart = () => {
+    if (messages.length === 0) return;
+    setShowClearConfirmModal(true);
+  };
+
+  const handleConfirmClearAndRestart = async () => {
+    if (isResettingSession) return;
+    setIsResettingSession(true);
+    setShowClearConfirmModal(false);
+    setSessionActionError(null);
+
+    if (activeConversationId && authToken) {
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/tutor/sessions/${activeConversationId}/reset`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        if (res.ok) {
+          setMessages([]);
+          setInputText('');
+          setRevealedHints({});
+        } else {
+          setSessionActionError('Failed to reset conversation on server.');
+        }
+      } catch (err) {
+        console.warn('Failed to reset session:', err);
+        setSessionActionError('Network error resetting conversation.');
+      } finally {
+        setIsResettingSession(false);
+        setTimeout(() => textareaRef.current?.focus(), 50);
+      }
+    } else {
+      setMessages([]);
+      setInputText('');
+      setRevealedHints({});
+      setIsResettingSession(false);
+      setTimeout(() => textareaRef.current?.focus(), 50);
+    }
   };
 
   const handleSendMessage = async (e?: FormEvent) => {
@@ -245,8 +363,19 @@ export function StudentTutor({
         }),
       });
 
+      if (res.status === 401) {
+        clearStoredAuth();
+        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+        throw new Error('Your session has expired. Please sign in again.');
+      }
+      if (res.status === 429) {
+        throw new Error('Inference rate limit reached. Please wait a moment before sending another inquiry.');
+      }
+      if (res.status === 503) {
+        throw new Error('The AI engine is temporarily experiencing high demand. Please try again shortly.');
+      }
       if (!res.ok) {
-        const errJson = await res.json();
+        const errJson = await res.json().catch(() => ({}));
         throw new Error(errJson.detail || 'Failed to receive tutor response.');
       }
 
@@ -273,11 +402,15 @@ export function StudentTutor({
         void loadConversations(false);
       }
     } catch (err: any) {
+      let friendlyError = err.message || 'An unexpected error occurred.';
+      if (err.name === 'TypeError' && String(err.message).toLowerCase().includes('fetch')) {
+        friendlyError = 'Unable to establish connection to the SUTRA LEARN backend. Please check your network connectivity.';
+      }
       const errorMsg: AIMessage = {
         id: `err-${Date.now()}`,
         conversation_id: activeConversationId || 'new',
         sender_role: 'assistant',
-        content: `I encountered an unexpected issue connecting to the learning engine: ${err.message}. Please try again.`,
+        content: `Learning Engine Notice: ${friendlyError}`,
         response_type: 'error',
         created_at: new Date().toISOString(),
       };
@@ -509,15 +642,21 @@ export function StudentTutor({
                   borderRadius: 'var(--radius-xs)',
                   border: '1px solid var(--border-subtle)',
                   backgroundColor: 'var(--surface-white)',
-                  cursor: 'pointer',
+                  cursor: isCreatingSession ? 'not-allowed' : 'pointer',
+                  opacity: isCreatingSession ? 0.7 : 1,
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px',
                 }}
                 onClick={handleStartNewSession}
+                disabled={isCreatingSession}
                 title="Start a fresh learning session"
               >
-                + New Session
+                {isCreatingSession ? (
+                  <SutraButtonLoader label="Creating..." />
+                ) : (
+                  '+ New Session'
+                )}
               </button>
             </div>
 
@@ -536,40 +675,15 @@ export function StudentTutor({
               }}
             >
               {conversationsLoading && conversations.length === 0 ? (
-                <div style={{ padding: 'var(--space-4) 0', textAlign: 'center' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                    Loading past sessions...
-                  </span>
-                </div>
+                <SutraSessionLoader state="loading" />
               ) : conversationsError ? (
-                <div
-                  style={{
-                    padding: 'var(--space-3)',
-                    backgroundColor: 'var(--feedback-error-bg)',
-                    borderRadius: 'var(--radius-xs)',
-                    border: '1px solid var(--feedback-error-border)',
-                  }}
-                >
-                  <p style={{ fontSize: '11px', color: 'var(--feedback-error)', margin: 0 }}>{conversationsError}</p>
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    style={{ fontSize: '11px', padding: '2px 0', marginTop: '4px', color: 'var(--sutra-mocha)', textDecoration: 'underline' }}
-                    onClick={() => void loadConversations()}
-                  >
-                    Retry loading
-                  </button>
-                </div>
+                <SutraSessionLoader state="error" onRetry={() => void loadConversations(false)} />
               ) : conversations.length === 0 ? (
-                <div style={{ padding: 'var(--space-6) 0', textAlign: 'center' }}>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>No previous sessions yet.</p>
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    Ask a question to begin your first adaptive dialogue.
-                  </p>
-                </div>
+                <SutraSessionLoader state="empty" onNewSession={handleStartNewSession} />
               ) : (
                 conversations.map((c) => {
                   const isActive = activeConversationId === c.id;
+                  const isSwitching = switchingSessionId === c.id;
                   return (
                     <button
                       key={c.id}
@@ -587,7 +701,7 @@ export function StudentTutor({
                         backgroundColor: isActive ? 'var(--surface-warm)' : 'transparent',
                         border: isActive ? '1px solid var(--sutra-taupe)' : '1px solid var(--border-subtle)',
                         color: isActive ? 'var(--sutra-espresso)' : 'var(--text-primary)',
-                        cursor: 'pointer',
+                        cursor: isSwitching ? 'wait' : 'pointer',
                         textAlign: 'left',
                         boxSizing: 'border-box',
                         flexShrink: 0,
@@ -614,19 +728,23 @@ export function StudentTutor({
                           gap: '2px',
                         }}
                       >
-                        <span
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: isActive ? 600 : 400,
-                            lineHeight: 1.4,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            display: 'block',
-                          }}
-                        >
-                          {c.title || 'Untitled Session'}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span
+                            style={{
+                              fontSize: '12px',
+                              fontWeight: isActive ? 600 : 400,
+                              lineHeight: 1.4,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              display: 'block',
+                              maxWidth: isSwitching ? '110px' : '150px',
+                            }}
+                          >
+                            {c.title || 'Untitled Session'}
+                          </span>
+                          {isSwitching && <SutraInlineLoader label="" />}
+                        </div>
                         {c.updated_at && (
                           <span
                             style={{
@@ -701,12 +819,48 @@ export function StudentTutor({
             <button
               type="button"
               className="btn-secondary"
-              style={{ height: '32px', fontSize: '11px', padding: '0 10px' }}
-              onClick={handleStartNewSession}
+              style={{
+                height: '32px',
+                fontSize: '11px',
+                padding: '0 10px',
+                opacity: messages.length === 0 || isResettingSession ? 0.5 : 1,
+                cursor: messages.length === 0 || isResettingSession ? 'not-allowed' : 'pointer',
+              }}
+              onClick={handlePromptClearAndRestart}
+              disabled={messages.length === 0 || isResettingSession}
+              title="Clear messages in the current conversation while keeping the session"
             >
-              Clear & Restart
+              {isResettingSession ? <SutraButtonLoader label="Clearing..." /> : 'Clear & Restart'}
             </button>
           </div>
+
+          {sessionActionError && (
+            <div
+              role="alert"
+              style={{
+                marginTop: 'var(--space-3)',
+                padding: '8px 12px',
+                backgroundColor: 'var(--feedback-error-bg)',
+                border: '1px solid var(--feedback-error-border)',
+                borderRadius: 'var(--radius-xs)',
+                fontSize: '12px',
+                color: 'var(--feedback-error)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <span>{sessionActionError}</span>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setSessionActionError(null)}
+                style={{ padding: '0 4px', fontSize: '14px', color: 'var(--feedback-error)', border: 'none', background: 'transparent', cursor: 'pointer' }}
+              >
+                &times;
+              </button>
+            </div>
+          )}
 
           {/* Conversation Stream */}
           <div
@@ -720,7 +874,14 @@ export function StudentTutor({
               maxHeight: '480px',
             }}
           >
-            {messages.length === 0 ? (
+            {isCreatingSession ? (
+              <div style={{ margin: 'auto 0' }}>
+                <SutraPageLoader
+                  message="Preparing your new learning space..."
+                  subMessage="Initializing a fresh NCERT Class 8 Socratic dialog with SUTRA AI"
+                />
+              </div>
+            ) : messages.length === 0 ? (
               <div style={{ textAlign: 'center', margin: 'auto 0', padding: 'var(--space-8)' }}>
                 <div style={{ fontSize: '32px', marginBottom: 'var(--space-2)' }}>🧭</div>
                 <h3 className="serif-title" style={{ fontSize: '20px', color: 'var(--sutra-espresso)' }}>
@@ -899,12 +1060,7 @@ export function StudentTutor({
               })
             )}
 
-            {loading && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '13px', fontStyle: 'italic' }}>
-                <span className="brand-symbol-mark" style={{ width: '20px', height: '20px', fontSize: '10px' }}>S</span>
-                <span>SUTRA AI is synthesizing mathematical steps and diagnostic hints...</span>
-              </div>
-            )}
+            {loading && <SutraChatLoader />}
             <div ref={messagesEndRef} />
           </div>
 
@@ -952,6 +1108,66 @@ export function StudentTutor({
           </form>
         </div>
       </div>
+
+      {/* SUTRA Themed Confirmation Modal for Clear & Restart */}
+      {showClearConfirmModal && (
+        <div
+          className="sutra-modal-backdrop"
+          onClick={() => setShowClearConfirmModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="clear-modal-title"
+        >
+          <div
+            className="sutra-modal-card"
+            onClick={(e) => e.stopPropagation()}
+            style={{ padding: 'var(--space-6)' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 'var(--space-3)' }}>
+              <span className="sutra-emblem-animated" style={{ width: '28px', height: '28px', fontSize: '14px' }}>
+                S
+              </span>
+              <h3
+                id="clear-modal-title"
+                className="serif-title"
+                style={{ fontSize: '18px', color: 'var(--sutra-espresso)', margin: 0, fontWeight: 600 }}
+              >
+                Clear Current Conversation?
+              </h3>
+            </div>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 var(--space-6) 0' }}>
+              This will clear messages in your current active learning session so you can explore this topic with a clean slate. Your previous separate sessions in Past Sessions will remain safely preserved.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setShowClearConfirmModal(false)}
+                style={{ fontSize: '12px', height: '34px', padding: '0 14px' }}
+              >
+                Keep Conversation
+              </button>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={handleConfirmClearAndRestart}
+                disabled={isResettingSession}
+                style={{
+                  fontSize: '12px',
+                  height: '34px',
+                  padding: '0 14px',
+                  backgroundColor: 'var(--feedback-error)',
+                  borderColor: 'var(--feedback-error)',
+                  color: '#fff',
+                }}
+              >
+                {isResettingSession ? <SutraButtonLoader label="Clearing..." /> : 'Clear & Restart'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -8,19 +8,28 @@ import sqlite3
 from pathlib import Path
 
 def get_db_path() -> str:
-    return os.environ.get(
-        "SUTRA_DB_PATH",
-        str(Path(__file__).resolve().parent.parent.parent / "sutra_learn.db")
-    )
+    env_path = os.environ.get("SUTRA_DB_PATH")
+    if env_path:
+        if os.path.isabs(env_path) and os.path.exists(env_path):
+            return env_path
+        if os.path.exists(env_path) and os.path.getsize(env_path) > 0:
+            return env_path
+        # Check relative to backend directory
+        backend_rel = Path(__file__).resolve().parent.parent.parent / env_path
+        if backend_rel.exists() and backend_rel.stat().st_size > 0:
+            return str(backend_rel)
+    # Canonical absolute fallback: backend/sutra_learn.db
+    return str(Path(__file__).resolve().parent.parent.parent / "sutra_learn.db")
 
 
 def get_db_connection() -> sqlite3.Connection:
     """
-    Returns a configured SQLite connection with foreign keys enabled and Row factory.
+    Returns a configured SQLite connection with foreign keys enabled, WAL-friendly busy timeout, and Row factory.
     """
     conn = sqlite3.connect(get_db_path(), timeout=10.0, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
+    conn.execute("PRAGMA busy_timeout = 10000;")
     return conn
 
 
@@ -119,8 +128,12 @@ CREATE TABLE IF NOT EXISTS system_audit_logs (
     rationale TEXT,
     outcome TEXT NOT NULL, -- 'APPLIED' | 'REJECTED' | 'RECORDED'
     details TEXT,
+    correlation_id TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_audit_category ON system_audit_logs(event_category, created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_correlation ON system_audit_logs(correlation_id);
 
 CREATE TABLE IF NOT EXISTS ai_conversations (
     id TEXT PRIMARY KEY,
@@ -151,6 +164,23 @@ CREATE TABLE IF NOT EXISTS ai_messages (
 );
 
 CREATE INDEX IF NOT EXISTS idx_ai_messages_conv ON ai_messages(conversation_id, created_at);
+
+CREATE TABLE IF NOT EXISTS spaced_retrieval_records (
+    learner_id TEXT NOT NULL,
+    concept_id TEXT NOT NULL,
+    stability_days REAL NOT NULL DEFAULT 1.5,
+    ease_factor REAL NOT NULL DEFAULT 2.5,
+    repetitions INTEGER NOT NULL DEFAULT 0,
+    last_practiced_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estimated_retention REAL NOT NULL DEFAULT 1.0,
+    next_review_due TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    retrieval_status TEXT NOT NULL DEFAULT 'CONSOLIDATED',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (learner_id, concept_id),
+    FOREIGN KEY (learner_id) REFERENCES learners(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_spaced_retrieval_due ON spaced_retrieval_records(learner_id, next_review_due);
 """
 
 
@@ -160,6 +190,7 @@ def init_db(db_path: str = None):
     conn = sqlite3.connect(target_path)
     conn.execute("PRAGMA foreign_keys = ON;")
     conn.execute("PRAGMA journal_mode = WAL;")
+    conn.execute("PRAGMA busy_timeout = 10000;")
     conn.executescript(SCHEMA_SQL)
 
     # Migration guard: Ensure password_hash column exists
@@ -170,16 +201,24 @@ def init_db(db_path: str = None):
         cursor.execute("ALTER TABLE learners ADD COLUMN password_hash TEXT;")
         conn.commit()
 
+    # Migration guard: Ensure correlation_id column exists on system_audit_logs
+    cursor.execute("PRAGMA table_info(system_audit_logs);")
+    audit_cols = [row[1] for row in cursor.fetchall()]
+    if "correlation_id" not in audit_cols:
+        cursor.execute("ALTER TABLE system_audit_logs ADD COLUMN correlation_id TEXT;")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_audit_correlation ON system_audit_logs(correlation_id);")
+        conn.commit()
+
     # Import hash helper
     from app.auth import hash_password
 
     # Seed demo users if not present
     cursor.execute("SELECT COUNT(*) FROM learners;")
     count = cursor.fetchone()[0]
-    if count == 0:
-        student_pw = hash_password("sutra123")
-        teacher_pw = hash_password("teacher123")
+    student_pw = hash_password("sutra123")
+    teacher_pw = hash_password("teacher123")
 
+    if count == 0:
         cursor.execute(
             "INSERT INTO learners (id, name, grade, role, password_hash) VALUES (?, ?, ?, ?, ?);",
             ("student-01", "Aarav Sharma", 8, "student", student_pw)
@@ -195,6 +234,17 @@ def init_db(db_path: str = None):
         cursor.execute(
             "INSERT INTO learners (id, name, grade, role, password_hash) VALUES (?, ?, ?, ?, ?);",
             ("teacher-01", "Ms. Ananya Roy", 8, "teacher", teacher_pw)
+        )
+        conn.commit()
+    else:
+        # Guarantee demo personas have valid password hashes if previously unpopulated
+        cursor.execute(
+            "UPDATE learners SET password_hash = ? WHERE id IN ('student-01', 'student-02', 'student-03') AND password_hash IS NULL;",
+            (student_pw,)
+        )
+        cursor.execute(
+            "UPDATE learners SET password_hash = ? WHERE id = 'teacher-01' AND password_hash IS NULL;",
+            (teacher_pw,)
         )
         conn.commit()
     conn.close()

@@ -1,0 +1,107 @@
+{
+  "timestamp": "2026-11-04 20:44:58",
+  "total_score": 1000,
+  "domain_scores": {
+    "domain_1": 150,
+    "domain_2": 100,
+    "domain_3": 100,
+    "domain_4": 150,
+    "domain_5": 150,
+    "domain_6": 150,
+    "domain_7": 75,
+    "domain_8": 50,
+    "domain_9": 25,
+    "domain_10": 50
+  },
+  "evidence": {
+    "domain_1": {
+      "key_present": true,
+      "key_length": 53,
+      "key_masked": "AQ.Ab8...fiVQ (len=53)",
+      "no_whitespace": true,
+      "configured_model": "gemini-flash-lite-latest",
+      "primary_provider": "gemini",
+      "enable_gemini": true,
+      "no_mock_credentials": true,
+      "frontend_bundle_clean": true
+    },
+    "domain_2": {
+      "package_name": "google-genai",
+      "installed_version": "2.34.0",
+      "auth_version": "2.62.0",
+      "has_genai_client": true,
+      "has_types": true,
+      "has_http_options": true,
+      "client_initialized": true,
+      "async_support": true
+    },
+    "domain_3": {
+      "target_model": "gemini-flash-lite-latest",
+      "total_available_models": 60,
+      "model_in_catalog": true,
+      "retired_models_detected": {
+        "gemini-2.5-flash": "404 NOT_FOUND (deprecated/unavailable to new users)",
+        "gemini-2.5-flash-lite": "404 NOT_FOUND (deprecated/unavailable to new users)"
+      },
+      "active_verified_models": [
+        "models/gemini-flash-lite-latest",
+        "models/gemini-3.5-flash-lite",
+        "models/gemini-3.8-flash"
+      ]
+    },
+    "domain_4": {
+      "auth_status": "AUTHENTICATED",
+      "http_status": 200,
+      "models_retrieved": 60,
+      "latency_ms": 1313.24,
+      "quota_status": "ACTIVE"
+    },
+    "domain_5": {
+      "prompt": "Explain why 2 + 3 equals 5 in one sentence.",
+      "status": "SUCCESS",
+      "generated_text": "The expression 2 + 3 equals 5 because combining a set of two items with a set of three disjoint items results in a total collection of five items.",
+      "latency_ms": 34844.5,
+      "prompt_tokens": 15,
+      "candidate_tokens": 33,
+      "total_tokens": 48
+    },
+    "domain_6": {
+      "input_question": "Explain how to solve 2x + 5 = 15 step by step.",
+      "status": "SUCCESS",
+      "conversation_id": "910d80ea-913e-45a3-a245-f00e0f51a6f3",
+      "message_id": "bc1c5972-2d8f-49ff-864a-6393d93b3e37",
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "is_fallback": false,
+      "latency_ms": 24107.25,
+      "answer_preview": "Hello there! I am so glad you asked. Solving equations like this is like keeping a traditional weighing scale perfectly balanced\u2014whatever you do to one side, you must always do to the other! \n\nLet's look at our equation together:\n$$2x + 5 = 15$$\n\nOur...",
+      "db_persisted_conversation": true,
+      "db_persisted_message": true,
+      "mathematical_consistency": {
+        "valid": true,
+        "verified_steps": 1,
+        "reason": "Single equation or conceptual narrative without step contradiction."
+      }
+    },
+    "domain_7": {
+      "frontend_source_leaks": [],
+      "frontend_is_secure": true,
+      "exception_categorization_safe": true
+    },
+    "domain_8": {
+      "invalid_key_caught": true,
+      "invalid_key_error_type": "ClientError",
+      "invalid_key_error_msg": "401 UNAUTHENTICATED. {'error': {'code': 401, 'message': 'API key not valid. Please pass a valid API key.', 'status': 'UN",
+      "invalid_model_caught": true,
+      "invalid_model_error_type": "ClientError",
+      "invalid_model_error_msg": "404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/nonexistent-gemini-model-9999 is not found for API version v1b"
+    },
+    "domain_9": {
+      "configured": true,
+      "enabled": true,
+      "health_status": "AVAILABLE",
+      "model_id": "gemini-flash-lite-latest",
+      "circuit_state": "CLOSED"
+    }
+  }
+}

@@ -6,6 +6,7 @@ enforces mathematical validation, circuit breaker recording, and request traceab
 
 import uuid
 import time
+import json
 import random
 import logging
 from typing import Dict, Any, List, Optional
@@ -123,6 +124,14 @@ class AIOrchestrator:
 
                 final_response = raw_res
                 final_response["validation_status"] = "VERIFIED"
+                logger.info(json.dumps({
+                    "lifecycle_event": "GEMINI_RESPONSE_VALIDATED",
+                    "request_id": request_id,
+                    "provider": provider.display_name,
+                    "model": provider.model_id,
+                    "validation_status": "VERIFIED",
+                    "timestamp_utc": datetime.now(timezone.utc).isoformat()
+                }))
                 break
 
             except GeminiAPIException as ge:

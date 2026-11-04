@@ -6,8 +6,15 @@ Parameterized SQL queries ensuring safety, data integrity, and atomic transactio
 import json
 import sqlite3
 import uuid
+from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 from app.engine.adaptive import EvidenceRecord, Recommendation, LearningPathOutcome
+from app.engine.spaced_retrieval import (
+    SpacedRetrievalEngine,
+    SpacedConceptSchedule,
+    SpacedRetrievalQueue,
+    RetrievalStatus
+)
 from app.content.models import MisconceptionTag, CognitiveDemand
 
 
@@ -90,6 +97,19 @@ def record_attempt(
         )
     )
     conn.commit()
+
+    # Automatically update Spaced Retrieval Memory Trace
+    try:
+        update_spaced_retrieval_state(
+            conn=conn,
+            learner_id=learner_id,
+            concept_id=concept_id,
+            is_correct=is_correct,
+            hint_used=hint_used
+        )
+    except Exception:
+        pass
+
     return {
         "id": attempt_id,
         "is_duplicate": False,
@@ -99,6 +119,137 @@ def record_attempt(
         "misconception_tag": misconception_tag,
         "message": "Attempt successfully recorded."
     }
+
+
+def update_spaced_retrieval_state(
+    conn: sqlite3.Connection,
+    learner_id: str,
+    concept_id: str,
+    is_correct: bool,
+    hint_used: bool
+) -> Dict[str, Any]:
+    """
+    Updates the learner's spaced retrieval state using the Ebbinghaus forgetting curve model.
+    """
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT stability_days, ease_factor, repetitions, last_practiced_at
+        FROM spaced_retrieval_records
+        WHERE learner_id = ? AND concept_id = ?
+        """,
+        (learner_id, concept_id)
+    )
+    row = cursor.fetchone()
+    if row:
+        current_stability = float(row["stability_days"])
+        current_ease = float(row["ease_factor"])
+        repetitions = int(row["repetitions"])
+    else:
+        current_stability = SpacedRetrievalEngine.BASE_STABILITY_DAYS
+        current_ease = SpacedRetrievalEngine.DEFAULT_EASE_FACTOR
+        repetitions = 0
+
+    updated = SpacedRetrievalEngine.update_schedule_on_attempt(
+        current_stability=current_stability,
+        current_ease=current_ease,
+        repetitions=repetitions,
+        is_correct=is_correct,
+        hint_used=hint_used
+    )
+
+    now_dt = datetime.now(timezone.utc)
+    schedule = SpacedRetrievalEngine.evaluate_concept_schedule(
+        concept_id=concept_id,
+        last_attempt_iso=now_dt.isoformat(),
+        stability_days=updated["stability_days"],
+        ease_factor=updated["ease_factor"],
+        repetitions=updated["repetitions"],
+        now=now_dt
+    )
+
+    cursor.execute(
+        """
+        INSERT INTO spaced_retrieval_records (
+            learner_id, concept_id, stability_days, ease_factor, repetitions,
+            last_practiced_at, estimated_retention, next_review_due, retrieval_status, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(learner_id, concept_id) DO UPDATE SET
+            stability_days=excluded.stability_days,
+            ease_factor=excluded.ease_factor,
+            repetitions=excluded.repetitions,
+            last_practiced_at=excluded.last_practiced_at,
+            estimated_retention=excluded.estimated_retention,
+            next_review_due=excluded.next_review_due,
+            retrieval_status=excluded.retrieval_status,
+            updated_at=CURRENT_TIMESTAMP;
+        """,
+        (
+            learner_id,
+            concept_id,
+            schedule.stability_days,
+            schedule.ease_factor,
+            schedule.repetition_count,
+            schedule.last_practiced_at,
+            schedule.estimated_retention,
+            schedule.next_review_due,
+            schedule.retrieval_status
+        )
+    )
+    conn.commit()
+    return schedule.model_dump()
+
+
+def get_learner_spaced_retrieval_queue(
+    conn: sqlite3.Connection,
+    learner_id: str
+) -> Dict[str, Any]:
+    """
+    Returns the real-time spaced retrieval queue for a learner,
+    re-evaluating retention decay dynamically against current wall-clock time.
+    """
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT concept_id, stability_days, ease_factor, repetitions, last_practiced_at
+        FROM spaced_retrieval_records
+        WHERE learner_id = ?
+        """,
+        (learner_id,)
+    )
+    rows = cursor.fetchall()
+    now_dt = datetime.now(timezone.utc)
+
+    schedules: List[SpacedConceptSchedule] = []
+    retention_sum = 0.0
+
+    for r in rows:
+        sch = SpacedRetrievalEngine.evaluate_concept_schedule(
+            concept_id=r["concept_id"],
+            last_attempt_iso=r["last_practiced_at"],
+            stability_days=float(r["stability_days"]),
+            ease_factor=float(r["ease_factor"]),
+            repetitions=int(r["repetitions"]),
+            now=now_dt
+        )
+        schedules.append(sch)
+        retention_sum += sch.estimated_retention
+
+    # Sort queue by urgency_score DESC
+    schedules.sort(key=lambda s: s.urgency_score, reverse=True)
+
+    due_count = sum(1 for s in schedules if s.retrieval_status in [RetrievalStatus.DUE_NOW, RetrievalStatus.CRITICAL_DECAY, RetrievalStatus.REVIEW_RECOMMENDED])
+    avg_retention = round(retention_sum / len(schedules), 3) if schedules else 1.0
+
+    queue = SpacedRetrievalQueue(
+        learner_id=learner_id,
+        total_evaluated_concepts=len(schedules),
+        due_count=due_count,
+        review_queue=schedules,
+        retention_average=avg_retention,
+        generated_at=now_dt.isoformat()
+    )
+    return queue.model_dump()
 
 
 def get_attempts_for_learner_concept(
@@ -677,12 +828,48 @@ def add_ai_message(
     }
 
 
+def clear_ai_conversation_messages(
+    conn: sqlite3.Connection,
+    conversation_id: str
+) -> int:
+    cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM ai_messages WHERE conversation_id = ?",
+        (conversation_id,)
+    )
+    deleted_count = cursor.rowcount
+    cursor.execute(
+        "UPDATE ai_conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        (conversation_id,)
+    )
+    conn.commit()
+    return deleted_count
+
+
+def update_ai_conversation_title(
+    conn: sqlite3.Connection,
+    conversation_id: str,
+    title: str
+) -> bool:
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE ai_conversations SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        (title, conversation_id)
+    )
+    conn.commit()
+    return cursor.rowcount > 0
+
+
 def delete_ai_conversation(
     conn: sqlite3.Connection,
     conversation_id: str,
     owner_id: str
 ) -> bool:
     cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM ai_messages WHERE conversation_id = ?",
+        (conversation_id,)
+    )
     cursor.execute(
         "DELETE FROM ai_conversations WHERE id = ? AND owner_id = ?",
         (conversation_id, owner_id)

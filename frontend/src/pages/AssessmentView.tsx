@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Concept, Question, Learner, AttemptResult } from '../types';
 import { savePendingAttempt, getPendingAttempts } from '../offline/db';
+import { clearStoredAuth } from '../services/auth';
+import { AUTH_EXPIRED_EVENT } from '../api/client';
 
 type AssessmentLifecycle = 'READY' | 'ANSWERING' | 'SUBMITTED' | 'FEEDBACK';
 
@@ -95,6 +97,12 @@ export function AssessmentView({
         body: JSON.stringify(payload),
       });
 
+      if (res.status === 401) {
+        clearStoredAuth();
+        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+        setError('Your session has expired. Please sign in again.');
+        return;
+      }
       if (res.ok) {
         const result: AttemptResult = await res.json();
         setAttemptResult({

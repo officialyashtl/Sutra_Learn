@@ -286,5 +286,30 @@ export interface CohortMetrics {
   intervention_success_rate_pct: number;
 }
 
+export interface SpacedConceptSchedule {
+  concept_id: string;
+  concept_title: string;
+  last_practiced_at: string;
+  days_elapsed: number;
+  stability_days: number;
+  ease_factor: number;
+  repetition_count: number;
+  estimated_retention: number;
+  retrieval_status: 'CONSOLIDATED' | 'REVIEW_RECOMMENDED' | 'DUE_NOW' | 'CRITICAL_DECAY';
+  urgency_score: number;
+  next_review_due: string;
+  recommended_action: string;
+  cognitive_rationale: string;
+}
+
+export interface SpacedRetrievalQueue {
+  learner_id: string;
+  total_evaluated_concepts: number;
+  due_count: number;
+  review_queue: SpacedConceptSchedule[];
+  retention_average: number;
+  generated_at: string;
+}
+
 
 

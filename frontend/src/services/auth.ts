@@ -22,8 +22,32 @@ export interface AuthSession {
   };
 }
 
+export function isTokenExpired(token: string | null): boolean {
+  if (!token) return true;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    const payloadB64 = parts[1];
+    const padding = '='.repeat((4 - (payloadB64.length % 4)) % 4);
+    const decoded = atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/') + padding);
+    const payload = JSON.parse(decoded);
+    if (!payload.exp) return false;
+    const now = Math.floor(Date.now() / 1000);
+    // Treat as expired if within 30 seconds of expiration to prevent in-flight 401s
+    return now >= payload.exp - 30;
+  } catch {
+    return true;
+  }
+}
+
 export function getStoredToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) return null;
+  if (isTokenExpired(token)) {
+    clearStoredAuth();
+    return null;
+  }
+  return token;
 }
 
 export function setStoredToken(token: string): void {
@@ -31,6 +55,11 @@ export function setStoredToken(token: string): void {
 }
 
 export function getStoredUser(): AuthSession | null {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token || isTokenExpired(token)) {
+    clearStoredAuth();
+    return null;
+  }
   const raw = localStorage.getItem(USER_KEY);
   if (!raw) return null;
   try {

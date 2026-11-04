@@ -1,0 +1,497 @@
+{
+  "backend_routes": [
+    {
+      "method": "GET",
+      "path": "/openapi.json",
+      "name": "openapi"
+    },
+    {
+      "method": "GET",
+      "path": "/docs",
+      "name": "swagger_ui_html"
+    },
+    {
+      "method": "GET",
+      "path": "/docs/oauth2-redirect",
+      "name": "swagger_ui_redirect"
+    },
+    {
+      "method": "GET",
+      "path": "/redoc",
+      "name": "redoc_html"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/concepts",
+      "name": "list_concepts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/concepts/{concept_id}",
+      "name": "read_concept"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/concepts/{concept_id}/questions",
+      "name": "list_concept_questions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/sessions/start",
+      "name": "start_assessment_session"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/attempts",
+      "name": "submit_attempt"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/recommendations/evaluate",
+      "name": "evaluate_concept_progress"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/learners",
+      "name": "list_learners"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/learners/{learner_id}/progress",
+      "name": "get_progress"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/learners/{learner_id}/attempts",
+      "name": "get_learner_attempts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/learners/{learner_id}/metrics",
+      "name": "get_learner_metrics_endpoint"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/learners/{learner_id}/spaced-retrieval",
+      "name": "get_learner_spaced_retrieval"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teacher/cohort",
+      "name": "get_cohort"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teacher/analytics/concepts",
+      "name": "get_concept_analytics"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teacher/overrides",
+      "name": "list_overrides"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teacher/interventions/{override_id}/effectiveness",
+      "name": "get_intervention_outcome"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teacher/audit",
+      "name": "list_categorized_audit"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/teacher/override",
+      "name": "apply_override"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teacher/metrics",
+      "name": "get_teacher_cohort_metrics"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "name": "login"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/session",
+      "name": "create_session"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "name": "get_me"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/tutor/chat",
+      "name": "tutor_chat"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/tutor/conversations",
+      "name": "list_conversations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/tutor/conversations/{conversation_id}",
+      "name": "get_conversation_detail"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/tutor/conversations/{conversation_id}",
+      "name": "delete_conversation"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/teacher/assistant/analyze",
+      "name": "analyze_classroom"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teacher/assistant/insights",
+      "name": "get_quick_insights"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ai/health",
+      "name": "get_ai_health"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ai/providers",
+      "name": "list_ai_providers"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ai/tutor",
+      "name": "direct_tutor_orchestration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ai/educator",
+      "name": "direct_educator_orchestration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ai/generate-diagnostic-item",
+      "name": "generate_diagnostic_item"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health",
+      "name": "health_check"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1",
+      "name": "api_info"
+    }
+  ],
+  "frontend_calls": [
+    {
+      "file": "App.tsx",
+      "rel_path": "src\\App.tsx",
+      "route_template": "/api/v1/learners",
+      "method": "GET",
+      "has_auth": false
+    },
+    {
+      "file": "App.tsx",
+      "rel_path": "src\\App.tsx",
+      "route_template": "/api/v1/concepts",
+      "method": "GET",
+      "has_auth": false
+    },
+    {
+      "file": "App.tsx",
+      "rel_path": "src\\App.tsx",
+      "route_template": "/api/v1/concepts",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "App.tsx",
+      "rel_path": "src\\App.tsx",
+      "route_template": "/api/v1/learners/${learnerId}/progress",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "App.tsx",
+      "rel_path": "src\\App.tsx",
+      "route_template": "/api/v1/concepts",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "App.tsx",
+      "rel_path": "src\\App.tsx",
+      "route_template": "/api/v1/teacher/cohort",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "App.tsx",
+      "rel_path": "src\\App.tsx",
+      "route_template": "/api/v1/teacher/analytics/concepts",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "App.tsx",
+      "rel_path": "src\\App.tsx",
+      "route_template": "/api/v1/concepts/${conceptId}",
+      "method": "GET",
+      "has_auth": false
+    },
+    {
+      "file": "App.tsx",
+      "rel_path": "src\\App.tsx",
+      "route_template": "/api/v1/recommendations/evaluate",
+      "method": "POST",
+      "has_auth": true
+    },
+    {
+      "file": "sync.ts",
+      "rel_path": "src\\offline\\sync.ts",
+      "route_template": "/api/v1/attempts",
+      "method": "POST",
+      "has_auth": true
+    },
+    {
+      "file": "AssessmentView.tsx",
+      "rel_path": "src\\pages\\AssessmentView.tsx",
+      "route_template": "/api/v1/concepts/${concept.id}/questions",
+      "method": "GET",
+      "has_auth": false
+    },
+    {
+      "file": "AssessmentView.tsx",
+      "rel_path": "src\\pages\\AssessmentView.tsx",
+      "route_template": "/api/v1/attempts",
+      "method": "POST",
+      "has_auth": true
+    },
+    {
+      "file": "EducatorAssistant.tsx",
+      "rel_path": "src\\pages\\EducatorAssistant.tsx",
+      "route_template": "/api/v1/teacher/assistant/insights",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "EducatorAssistant.tsx",
+      "rel_path": "src\\pages\\EducatorAssistant.tsx",
+      "route_template": "/api/v1/ai/health",
+      "method": "GET",
+      "has_auth": false
+    },
+    {
+      "file": "EducatorAssistant.tsx",
+      "rel_path": "src\\pages\\EducatorAssistant.tsx",
+      "route_template": "/api/v1/teacher/assistant/analyze",
+      "method": "POST",
+      "has_auth": true
+    },
+    {
+      "file": "LessonView.tsx",
+      "rel_path": "src\\pages\\LessonView.tsx",
+      "route_template": "/api/v1/concepts/${concept.id}",
+      "method": "GET",
+      "has_auth": false
+    },
+    {
+      "file": "StudentHome.tsx",
+      "rel_path": "src\\pages\\StudentHome.tsx",
+      "route_template": "/api/v1/learners/${learner.id}/attempts",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "StudentHome.tsx",
+      "rel_path": "src\\pages\\StudentHome.tsx",
+      "route_template": "/api/v1/learners/${learner.id}/metrics",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "StudentHome.tsx",
+      "rel_path": "src\\pages\\StudentHome.tsx",
+      "route_template": "/api/v1/learners/${learner.id}/spaced-retrieval",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "StudentInsights.tsx",
+      "rel_path": "src\\pages\\StudentInsights.tsx",
+      "route_template": "/api/v1/learners/${learner.id}/metrics",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "StudentInsights.tsx",
+      "rel_path": "src\\pages\\StudentInsights.tsx",
+      "route_template": "/api/v1/learners/${learner.id}/spaced-retrieval",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "StudentLogin.tsx",
+      "rel_path": "src\\pages\\StudentLogin.tsx",
+      "route_template": "/api/v1/auth/me",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "StudentProgress.tsx",
+      "rel_path": "src\\pages\\StudentProgress.tsx",
+      "route_template": "/api/v1/learners/${learner.id}/attempts",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "StudentProgress.tsx",
+      "rel_path": "src\\pages\\StudentProgress.tsx",
+      "route_template": "/api/v1/learners/${learner.id}/metrics",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "StudentTutor.tsx",
+      "rel_path": "src\\pages\\StudentTutor.tsx",
+      "route_template": "/api/v1/tutor/conversations/${convId}",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "StudentTutor.tsx",
+      "rel_path": "src\\pages\\StudentTutor.tsx",
+      "route_template": "/api/v1/tutor/conversations",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "StudentTutor.tsx",
+      "rel_path": "src\\pages\\StudentTutor.tsx",
+      "route_template": "/api/v1/tutor/conversations",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "StudentTutor.tsx",
+      "rel_path": "src\\pages\\StudentTutor.tsx",
+      "route_template": "/api/v1/ai/health",
+      "method": "GET",
+      "has_auth": false
+    },
+    {
+      "file": "StudentTutor.tsx",
+      "rel_path": "src\\pages\\StudentTutor.tsx",
+      "route_template": "/api/v1/tutor/chat",
+      "method": "POST",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherAudit.tsx",
+      "rel_path": "src\\pages\\TeacherAudit.tsx",
+      "route_template": "/api/v1/teacher/audit${query}",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherDashboard.tsx",
+      "rel_path": "src\\pages\\TeacherDashboard.tsx",
+      "route_template": "/api/v1/teacher/cohort",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherDashboard.tsx",
+      "rel_path": "src\\pages\\TeacherDashboard.tsx",
+      "route_template": "/api/v1/teacher/overrides",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherDashboard.tsx",
+      "rel_path": "src\\pages\\TeacherDashboard.tsx",
+      "route_template": "/api/v1/teacher/analytics/concepts",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherDashboard.tsx",
+      "rel_path": "src\\pages\\TeacherDashboard.tsx",
+      "route_template": "/api/v1/learners/${student.learner_id}/attempts",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherDashboard.tsx",
+      "rel_path": "src\\pages\\TeacherDashboard.tsx",
+      "route_template": "/api/v1/teacher/override",
+      "method": "POST",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherInterventions.tsx",
+      "rel_path": "src\\pages\\TeacherInterventions.tsx",
+      "route_template": "/api/v1/teacher/override",
+      "method": "POST",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherLearnerProfile.tsx",
+      "rel_path": "src\\pages\\TeacherLearnerProfile.tsx",
+      "route_template": "/api/v1/teacher/cohort",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherLearnerProfile.tsx",
+      "rel_path": "src\\pages\\TeacherLearnerProfile.tsx",
+      "route_template": "/api/v1/learners/${learnerId}/attempts",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherLearnerProfile.tsx",
+      "rel_path": "src\\pages\\TeacherLearnerProfile.tsx",
+      "route_template": "/api/v1/learners/${learnerId}/progress",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherLearnerProfile.tsx",
+      "rel_path": "src\\pages\\TeacherLearnerProfile.tsx",
+      "route_template": "/api/v1/teacher/overrides",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "TeacherLogin.tsx",
+      "rel_path": "src\\pages\\TeacherLogin.tsx",
+      "route_template": "/api/v1/auth/me",
+      "method": "GET",
+      "has_auth": true
+    },
+    {
+      "file": "auth.ts",
+      "rel_path": "src\\services\\auth.ts",
+      "route_template": "/api/v1/auth/login",
+      "method": "POST",
+      "has_auth": true
+    },
+    {
+      "file": "auth.ts",
+      "rel_path": "src\\services\\auth.ts",
+      "route_template": "/api/v1/auth/session",
+      "method": "POST",
+      "has_auth": true
+    }
+  ]
+}

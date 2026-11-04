@@ -86,3 +86,17 @@ def get_learner_metrics_endpoint(
     """
     verify_learner_ownership(learner_id, current_user)
     return calculate_learner_metrics(conn, learner_id)
+
+
+@router.get("/{learner_id}/spaced-retrieval")
+def get_learner_spaced_retrieval(
+    learner_id: str,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    conn=Depends(get_db_connection)
+):
+    """
+    Returns real-time spaced retrieval queue and Ebbinghaus retention decay for the learner.
+    Enforces learner ownership authorization.
+    """
+    verify_learner_ownership(learner_id, current_user)
+    return crud.get_learner_spaced_retrieval_queue(conn, learner_id)

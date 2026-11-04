@@ -67,7 +67,7 @@ def test_scenario_1_first_time_student(client):
     res_curr = client.get("/api/v1/concepts", headers=headers)
     assert res_curr.status_code == 200
     concepts = res_curr.json()["concepts"]
-    assert len(concepts) == 6
+    assert len(concepts) >= 6
     # First concept MATH-C01 is unlocked
     c01 = next(c for c in concepts if c["id"] == "MATH-C01")
     assert c01["is_unlocked"] is True

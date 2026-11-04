@@ -13,7 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class AISettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(".env", "../.env"),
+        env_file=("backend/.env", ".env", "../.env"),
         env_file_encoding="utf-8",
         extra="ignore"
     )
@@ -82,7 +82,7 @@ class AISettings(BaseSettings):
         description="Google Gemini API Secret Key"
     )
     gemini_model: str = Field(
-        default="gemini-3.8-flash",
+        default="gemini-flash-lite-latest",
         alias="GEMINI_MODEL",
         description="Verified generation-compatible Gemini model identifier"
     )

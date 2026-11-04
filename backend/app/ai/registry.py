@@ -3,6 +3,7 @@ SUTRA LEARN — AI Provider Registry & Lifecycle Manager
 Manages provider instances, circuit breakers, health evaluations, and policy-based provider selection.
 """
 
+import os
 import time
 import logging
 from typing import Dict, Any, List, Optional
@@ -60,7 +61,7 @@ class AIProviderRegistry:
         Determines the ordered list of eligible provider adapters based on operating mode,
         activation flags, circuit breaker status, and local model availability.
         """
-        if self.settings.app_env == "testing":
+        if self.settings.app_env == "testing" or os.environ.get("APP_ENV") == "testing" or "PYTEST_CURRENT_TEST" in os.environ:
             # Fast deterministic testing path
             return []
 
@@ -110,9 +111,26 @@ class AIProviderRegistry:
         cb_gemini = self.circuit_breakers["gemini"]
         gem_state = ProviderState.AVAILABLE
         if not self.gemini.is_configured():
-            gem_state = ProviderState.NOT_CONFIGURED
+            if self.gemini.api_key and self.gemini._client is None:
+                gem_state = ProviderState.INITIALIZING
+            else:
+                gem_state = ProviderState.NOT_CONFIGURED
         elif not self.settings.ai_enable_gemini or self.settings.ai_offline_mode:
             gem_state = ProviderState.DISABLED
+        elif cb_gemini.last_error_category in (ErrorCategory.PERMANENT_AUTH, ErrorCategory.PERMISSION_DENIED):
+            gem_state = ProviderState.AUTHENTICATION_FAILED
+        elif cb_gemini.last_error_category == ErrorCategory.MODEL_NOT_FOUND:
+            gem_state = ProviderState.MODEL_NOT_FOUND
+        elif cb_gemini.last_error_category == ErrorCategory.QUOTA_EXCEEDED:
+            gem_state = ProviderState.QUOTA_EXCEEDED
+        elif cb_gemini.last_error_category == ErrorCategory.RATE_LIMITED:
+            gem_state = ProviderState.RATE_LIMITED
+        elif cb_gemini.last_error_category == ErrorCategory.TIMEOUT:
+            gem_state = ProviderState.PROVIDER_TIMEOUT
+        elif cb_gemini.last_error_category == ErrorCategory.NETWORK_FAILURE:
+            gem_state = ProviderState.PROVIDER_UNREACHABLE
+        elif cb_gemini.last_error_category == ErrorCategory.UNKNOWN:
+            gem_state = ProviderState.UNKNOWN_ERROR
         elif cb_gemini.state == "OPEN":
             gem_state = ProviderState.CIRCUIT_OPEN
         elif cb_gemini.failure_count > 0:

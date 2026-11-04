@@ -269,12 +269,18 @@ class AdaptiveEngine:
 
         # 6. Check for Developing Understanding -> SCAFFOLD
         if (weighted_score >= self.policy.scaffold_accuracy_threshold or assisted_correct > 0 or unassisted_correct > 0):
+            fresh_scaffold = self._select_fresh_question(
+                current_concept_id,
+                set(distinct_attempts.keys()),
+                target_difficulty=1,
+                target_demand=CognitiveDemand.PROCEDURAL
+            )
             return Recommendation(
                 outcome=LearningPathOutcome.SCAFFOLD,
                 target_concept_id=current_concept_id,
                 target_concept_title=concept.title,
                 target_activity_type="practice",
-                target_activity_id=f"practice-guided-{current_concept_id.lower()}",
+                target_activity_id=fresh_scaffold.id if fresh_scaffold else f"practice-guided-{current_concept_id.lower()}",
                 reason_code="SCAFF_DEVELOPING_UNDERSTANDING",
                 explanation=(
                     f"Understanding of '{concept.title}' is actively developing "
@@ -287,7 +293,12 @@ class AdaptiveEngine:
             )
 
         # 7. Fallback / Conflicting -> CONFIRM
-        fresh_q = self._select_fresh_question(current_concept_id, set(distinct_attempts.keys()))
+        fresh_q = self._select_fresh_question(
+            current_concept_id,
+            set(distinct_attempts.keys()),
+            target_difficulty=2,
+            target_demand=CognitiveDemand.CONCEPTUAL
+        )
         return Recommendation(
             outcome=LearningPathOutcome.CONFIRM,
             target_concept_id=current_concept_id,
@@ -301,12 +312,38 @@ class AdaptiveEngine:
             policy_version=self.policy.policy_version
         )
 
-    def _select_fresh_question(self, concept_id: str, used_ids: Set[str]):
-        available = [q for q in get_questions_by_concept(concept_id) if q.id not in used_ids]
-        if available:
-            return available[0]
+    def _select_fresh_question(
+        self,
+        concept_id: str,
+        used_ids: Set[str],
+        target_difficulty: int = 1,
+        target_demand: Optional[CognitiveDemand] = None
+    ):
+        """
+        Dynamically selects the optimal diagnostic question matching the student's Zone of Proximal Development (ZPD).
+        Prefers unused items matching target difficulty and cognitive demand.
+        """
         all_q = get_questions_by_concept(concept_id)
-        return all_q[0] if all_q else None
+        if not all_q:
+            return None
+
+        available = [q for q in all_q if q.id not in used_ids]
+        pool = available if available else all_q
+
+        # 1. Match exact target difficulty and cognitive demand
+        if target_demand:
+            exact = [q for q in pool if q.difficulty == target_difficulty and q.cognitive_demand == target_demand]
+            if exact:
+                return exact[0]
+
+        # 2. Match target difficulty
+        diff_match = [q for q in pool if q.difficulty == target_difficulty]
+        if diff_match:
+            return diff_match[0]
+
+        # 3. Match closest difficulty
+        sorted_by_closeness = sorted(pool, key=lambda q: abs(q.difficulty - target_difficulty))
+        return sorted_by_closeness[0]
 
     def _get_next_concept(self, current_concept_id: str):
         concepts = sorted(list(CONCEPTS_REGISTRY.values()), key=lambda c: c.order_index)

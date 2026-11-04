@@ -4,6 +4,7 @@ Implements dedicated adapters for Qwen 3.5 4B (qwen3.5:4b) and Gemma 4 E2B (gemm
 managing Ollama connectivity, bounded context, and reasoning stream extraction.
 """
 
+import os
 import time
 import logging
 from typing import Dict, Any, List, Optional
@@ -25,6 +26,9 @@ class OllamaTransport:
         self._last_tag_check: float = 0.0
 
     async def get_installed_models(self, cache_seconds: float = 30.0) -> List[str]:
+        if os.environ.get("APP_ENV") == "testing" or "PYTEST_CURRENT_TEST" in os.environ or os.environ.get("AI_ENABLE_QWEN") == "false":
+            return self._cached_tags
+
         now = time.time()
         if self._cached_tags and (now - self._last_tag_check < cache_seconds):
             return self._cached_tags

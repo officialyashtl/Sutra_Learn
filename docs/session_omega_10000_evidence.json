@@ -1,0 +1,84 @@
+{
+  "timestamp": "2026-11-04T18:13:42.613454+00:00",
+  "total_score": 10000,
+  "max_score": 10000,
+  "domain_scores": {
+    "database_durability": 1500,
+    "auth_isolation": 1500,
+    "session_lifecycle_21_steps": 3000,
+    "clear_and_restart": 1000,
+    "gemini_regression": 1200,
+    "audit_trail": 1000,
+    "loading_and_frontend": 800
+  },
+  "evidence": {
+    "phase1_database": {
+      "db_path": "backend/sutra_learn.db",
+      "journal_mode": "wal",
+      "foreign_keys_enabled": true,
+      "historical_conversations_preserved": true,
+      "historical_messages_preserved": true,
+      "historical_audit_logs_preserved": true,
+      "render_persistent_storage_path_supported": true
+    },
+    "phase2_auth": {
+      "learner_a_authenticated": true,
+      "learner_b_authenticated": true,
+      "tampered_token_rejected": true,
+      "jwt_claims_contain_role_and_name": true
+    },
+    "phase3_lifecycle": {
+      "session_a_id": "9b78f4ad-1baa-4298-8ee1-1024893119e7",
+      "session_b_id": "a04801c7-3887-4e7d-bb4b-7543d20cd5e5",
+      "distinct_session_ids": true,
+      "session_a_messages_stored": 2,
+      "session_b_messages_stored": 2,
+      "zero_cross_contamination_5_switches": true,
+      "unauthorized_learner_blocked_403": true,
+      "missing_session_returns_404": true,
+      "reconnect_durability_verified": true
+    },
+    "phase4_clear_restart": {
+      "session_id_tested": "e23350aa-a103-4083-87b1-dea1b69fbb8a",
+      "messages_before_reset": 2,
+      "cleared_count_returned": 2,
+      "messages_after_reset": 0,
+      "session_record_preserved": true,
+      "fresh_messages_accepted_after_reset": true
+    },
+    "phase5_gemini": {
+      "gemini_api_key_configured": true,
+      "active_model_configured": "gemini-flash-lite-latest",
+      "session_id": "e86ff305-b1c9-46d4-b0a1-12939e3719a2",
+      "inference_provider": "Google Gemini",
+      "inference_model": "gemini-flash-lite-latest",
+      "response_snippet": "Hello there! It is wonderful to work with you today on mastering integers and equations. You've asked a fantastic questi...",
+      "response_persisted_in_db": true
+    },
+    "phase6_audit": {
+      "session_lifecycle_audit_records_present": true,
+      "recent_audit_actions_captured": [
+        "generateContent",
+        "generateContent",
+        "create_session",
+        "reset_session",
+        "create_session"
+      ],
+      "correlation_ids_present": true,
+      "zero_secret_or_token_leaks": true,
+      "total_audit_logs_in_database": 5
+    },
+    "phase7_frontend": {
+      "all_7_loaders_exported": true,
+      "component_integrations": {
+        "uses_SutraSessionLoader": true,
+        "uses_SutraChatLoader": true,
+        "uses_SutraPageLoader": true,
+        "uses_SutraButtonLoader": true,
+        "has_clear_confirm_modal": true,
+        "disables_duplicate_new_session_clicks": true,
+        "has_stale_response_guard": true
+      }
+    }
+  }
+}

@@ -14,7 +14,12 @@ export function UnifiedLogin({ apiBaseUrl, onLoginSuccess }: UnifiedLoginProps) 
   const [password, setPassword] = useState('sutra123');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('session_expired=true')) {
+      return 'Your session has expired. Please sign in again with your credentials.';
+    }
+    return null;
+  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

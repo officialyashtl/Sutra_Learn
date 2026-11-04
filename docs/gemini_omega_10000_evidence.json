@@ -1,0 +1,188 @@
+{
+  "timestamp": "2026-11-04 22:20:31",
+  "total_score": 10000,
+  "max_score": 10000,
+  "domain_scores": {
+    "configuration": 1200,
+    "sdk_and_models": 1200,
+    "404_forensics": 1400,
+    "request_trail": 1400,
+    "health_status": 800,
+    "resilience": 900,
+    "response_quality": 700,
+    "frontend_integration": 900,
+    "production_infrastructure": 800,
+    "persistence": 300,
+    "regression_acceptance": 400
+  },
+  "evidence": {
+    "phase_1_configuration": {
+      "key_present": true,
+      "key_masked": "AQ.Ab8...fiVQ (len=53)",
+      "key_length": 53,
+      "whitespace_clean": true,
+      "model_configured": "gemini-flash-lite-latest",
+      "primary_provider": "gemini",
+      "frontend_bundle_clean": true,
+      "local_env_isolated": true,
+      "no_mock_credentials": true
+    },
+    "phase_2_sdk_and_models": {
+      "sdk_package": "google-genai",
+      "sdk_version": "2.34.0",
+      "auth_version": "2.62.0",
+      "total_available_models": 60,
+      "primary_model": "gemini-flash-lite-latest",
+      "primary_model_available": true,
+      "high_availability_cascade": [
+        "gemini-flash-lite-latest",
+        "gemini-3.5-flash-lite",
+        "gemini-3.1-flash-lite",
+        "gemini-3.8-flash"
+      ],
+      "client_async_capable": true
+    },
+    "phase_3_404_forensics": {
+      "root_cause_explanation": "Historical probe scripts tested deprecated models (gemini-2.5-flash, gemini-2.5-flash-lite, gemini-2.5-pro) which Google returned 404 NOT_FOUND. Once gemini-flash-lite-latest was adopted, success rate reached 100%.",
+      "probed_retired_models": {
+        "gemini-2.5-flash": {
+          "http_status": 404,
+          "error_class": "MODEL_NOT_FOUND",
+          "error_excerpt": "404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models"
+        },
+        "gemini-2.5-flash-lite": {
+          "http_status": 404,
+          "error_class": "MODEL_NOT_FOUND",
+          "error_excerpt": "404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash-lite is no longer available to new users. Please update your code to use m"
+        },
+        "gemini-2.5-pro": {
+          "http_status": 404,
+          "error_class": "MODEL_NOT_FOUND",
+          "error_excerpt": "404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-pro is no longer available to new users. Please update your code to use models/g"
+        }
+      },
+      "production_adapter_cascade_safe": true
+    },
+    "phase_4_request_trail": {
+      "structured_trail_active": true,
+      "sample_audit_record": {
+        "id": "aud_951a15a9e63844",
+        "created_at": "2026-11-04 16:49:55",
+        "actor_id": "student-01",
+        "correlation_id": "req_666dc9112023",
+        "rationale": "AI Tutor response generated via Google Gemini (gemini-flash-lite-latest)",
+        "details": {
+          "timestamp_utc": "2026-11-04T16:49:55.242700+00:00",
+          "request_id": "req_666dc9112023",
+          "session_id": "6e1f3c62-7ea9-4294-b7dc-f630fb628abf",
+          "endpoint": "/api/v1/tutor/chat",
+          "operation": "generateContent",
+          "model": "gemini-flash-lite-latest",
+          "provider": "Google Gemini",
+          "environment": "development",
+          "duration_ms": 12351.36,
+          "http_status": 200,
+          "outcome": "SUCCESS",
+          "error_class": null,
+          "retry_count": 0,
+          "tokens_used": "[REDACTED]"
+        }
+      },
+      "tracked_lifecycle_events": [
+        "REQUEST_RECEIVED",
+        "AUTHENTICATION_VERIFIED",
+        "TUTOR_REQUEST_VALIDATED",
+        "GEMINI_CLIENT_READY",
+        "GEMINI_REQUEST_STARTED",
+        "GEMINI_RESPONSE_RECEIVED",
+        "GEMINI_RESPONSE_VALIDATED",
+        "CONVERSATION_PERSISTED",
+        "RESPONSE_DELIVERED"
+      ]
+    },
+    "phase_5_health_status": {
+      "gemini_found": true,
+      "status": "AVAILABLE",
+      "model_id": "gemini-flash-lite-latest",
+      "configured": true,
+      "circuit_state": "CLOSED",
+      "distinguished_states": [
+        "NOT_CONFIGURED",
+        "INITIALIZING",
+        "AVAILABLE",
+        "DEGRADED",
+        "AUTHENTICATION_FAILED",
+        "MODEL_NOT_FOUND",
+        "RATE_LIMITED",
+        "QUOTA_EXCEEDED",
+        "PROVIDER_TIMEOUT",
+        "PROVIDER_UNREACHABLE",
+        "UNKNOWN_ERROR"
+      ]
+    },
+    "phase_6_resilience": {
+      "error_classification": {
+        "401_auth": "PERMANENT_AUTH",
+        "404_model": "MODEL_NOT_FOUND",
+        "429_quota": "QUOTA_EXCEEDED",
+        "rate_limit": "RATE_LIMITED",
+        "network": "NETWORK_FAILURE",
+        "timeout": "TIMEOUT"
+      },
+      "bounded_retries_configured": 2,
+      "timeout_seconds": 60.0,
+      "permanent_404_skipped_without_retrying": true,
+      "exponential_backoff_jitter_enabled": true
+    },
+    "phase_7_response_quality": {
+      "test_prompt": "Explain how to solve 2x + 5 = 15 step by step.",
+      "latency_ms": 32064.93,
+      "answer_preview": "To solve the equation **$2x + 5 = 15$**, your goal is to isolate $x$ on one side of the equals sign. Here is how to do it step by step:\n\n### **Step 1: Subtract 5 from both sides.**\nTo undo the additio...",
+      "contains_balance_principle": true,
+      "contains_step_1_subtraction": true,
+      "contains_step_2_division": true,
+      "contains_solution_5": true,
+      "mathematical_validation": {
+        "valid": true,
+        "verified_steps": 2,
+        "common_root": 5.0,
+        "reason": "All 2 algebraic steps consistently solve to x = 5.0."
+      }
+    },
+    "phase_8_frontend_integration": {
+      "handles_401_session_expired": true,
+      "handles_429_rate_limit": true,
+      "handles_503_high_demand": true,
+      "network_fetch_error_friendly": true,
+      "clears_auth_on_401": true,
+      "dispatches_auth_expired_event": true
+    },
+    "phase_9_production_infrastructure": {
+      "render_service_name": "sutra-learn-backend",
+      "render_python_version": "3.11.9",
+      "render_persistent_disk": "sutra-data (/var/data)",
+      "render_db_path": "/var/data/sutra_learn.db",
+      "render_secret_gemini_key_managed": true,
+      "render_cors_contains_vercel": true,
+      "vercel_spa_rewrites_configured": true,
+      "no_localhost_fallback_in_prod": true
+    },
+    "phase_10_persistence": {
+      "ai_conversations_total": 48,
+      "ai_messages_total": 110,
+      "system_audit_logs_total": 79,
+      "conversations_durably_saved": true,
+      "messages_durably_saved": true,
+      "audit_trail_populated": true
+    },
+    "phase_11_regression_acceptance": {
+      "backend_pytest_passed": 11,
+      "mathematics_suites_passed": 5,
+      "landing_page_suites_passed": 8,
+      "restored_apis_passed": 10,
+      "frontend_oxlint_errors": 0,
+      "frontend_oxlint_warnings": 0,
+      "vite_build_exit_code": 0
+    }
+  }
+}

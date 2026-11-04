@@ -5,7 +5,7 @@ Requires authenticated caller identity and enforces ownership of submissions.
 
 import uuid
 from typing import Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from app.db.database import get_db_connection
 from app.db import crud
 from app.content.questions import QUESTIONS_REGISTRY
@@ -18,6 +18,7 @@ from app.schemas import (
     RecommendationResponse
 )
 from app.auth import get_current_user
+from app.services.audit import record_audit_event, AuditCategory
 
 router = APIRouter(prefix="/api/v1", tags=["Assessment & Adaptation"])
 engine = AdaptiveEngine()
@@ -55,6 +56,7 @@ def start_assessment_session(
 @router.post("/attempts", response_model=AttemptResult)
 def submit_attempt(
     attempt: AttemptCreate,
+    request: Request,
     current_user: Dict[str, Any] = Depends(get_current_user),
     conn=Depends(get_db_connection)
 ):
@@ -97,15 +99,41 @@ def submit_attempt(
         client_timestamp=attempt.client_timestamp
     )
 
+    final_is_correct = db_res["is_correct"] if db_res["is_duplicate"] else is_correct
+    final_hint_used = db_res["hint_used"] if db_res["is_duplicate"] else attempt.hint_used
+    final_selected = db_res["selected_option_id"] if db_res["is_duplicate"] else attempt.selected_option_id.upper()
+    final_misconception = db_res["misconception_tag"] if db_res["is_duplicate"] else misconception_tag
+
+    # Record attempt creation in audit trail
+    corr_id = getattr(request.state, "correlation_id", None) if hasattr(request, "state") else None
+    record_audit_event(
+        conn=conn,
+        event_category=AuditCategory.AUTHORIZED,
+        actor_id=current_user["id"],
+        actor_role=current_user.get("role"),
+        learner_id=attempt.learner_id,
+        concept_id=q.concept_id,
+        outcome="RECORDED",
+        rationale=f"Attempt submitted for {q_id} (correct={final_is_correct}, duplicate={db_res['is_duplicate']})",
+        correlation_id=corr_id,
+        details={
+            "attempt_id": attempt.attempt_id,
+            "question_id": q_id,
+            "is_correct": final_is_correct,
+            "hint_used": final_hint_used,
+            "misconception_tag": final_misconception
+        }
+    )
+
     return AttemptResult(
         attempt_id=attempt.attempt_id,
         is_duplicate=db_res["is_duplicate"],
-        is_correct=is_correct,
-        hint_used=attempt.hint_used,
-        selected_option_id=attempt.selected_option_id.upper(),
+        is_correct=final_is_correct,
+        hint_used=final_hint_used,
+        selected_option_id=final_selected,
         correct_option_id=q.correct_option_id,
         explanation=q.explanation,
-        misconception_tag=misconception_tag,
+        misconception_tag=final_misconception,
         misconception_explanation=misconception_explanation,
         message=db_res["message"]
     )
@@ -114,6 +142,7 @@ def submit_attempt(
 @router.post("/recommendations/evaluate", response_model=RecommendationResponse)
 def evaluate_concept_progress(
     req: EvaluationRequest,
+    request: Request,
     current_user: Dict[str, Any] = Depends(get_current_user),
     conn=Depends(get_db_connection)
 ):
@@ -131,6 +160,26 @@ def evaluate_concept_progress(
     evidence = crud.get_attempts_for_learner_concept(conn, req.learner_id, concept_id)
     rec = engine.evaluate_learner_concept(concept_id, evidence)
     rec_id = crud.save_recommendation(conn, req.learner_id, concept_id, rec)
+
+    # Record clinical adaptation outcome in audit trail
+    corr_id = getattr(request.state, "correlation_id", None) if hasattr(request, "state") else None
+    record_audit_event(
+        conn=conn,
+        event_category=AuditCategory.PEDAGOGICAL,
+        actor_id=current_user["id"],
+        actor_role=current_user.get("role"),
+        learner_id=req.learner_id,
+        concept_id=concept_id,
+        outcome="APPLIED",
+        rationale=f"Adaptive evaluation yielded {rec.outcome.value} (reason: {rec.reason_code})",
+        correlation_id=corr_id,
+        details={
+            "recommendation_id": rec_id,
+            "outcome": rec.outcome.value,
+            "confidence": rec.confidence_score,
+            "policy_version": rec.policy_version
+        }
+    )
 
     return RecommendationResponse(
         id=rec_id,

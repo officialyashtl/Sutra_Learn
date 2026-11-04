@@ -22,7 +22,8 @@ import { TeacherInterventions } from './pages/TeacherInterventions';
 import { TeacherAudit } from './pages/TeacherAudit';
 import { EducatorAssistant } from './pages/EducatorAssistant';
 import { cacheConcepts, getCachedConcepts } from './offline/db';
-import { getStoredToken, getStoredUser, clearStoredAuth } from './services/auth';
+import { getStoredToken, getStoredUser, clearStoredAuth, isTokenExpired } from './services/auth';
+import { AUTH_EXPIRED_EVENT } from './api/client';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
@@ -159,6 +160,25 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    const token = getStoredToken();
+    if (token && isTokenExpired(token)) {
+      clearStoredAuth();
+      setAuthToken(null);
+      navigate('/login?session_expired=true');
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      clearStoredAuth();
+      setAuthToken(null);
+      navigate('/login?session_expired=true');
+    };
+    window.addEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+  }, [navigate]);
+
+  useEffect(() => {
     const handlePopState = () => {
       setRoute(parsePath(window.location.pathname));
     };
@@ -206,7 +226,7 @@ export function App() {
   useEffect(() => {
     if (route.type === 'landing' && typeof window !== 'undefined' && window.location.pathname !== '/cover') {
       const stored = getStoredUser();
-      const token = authToken || getStoredToken();
+      const token = getStoredToken();
       if (token && stored) {
         if (stored.role === 'teacher') {
           navigate('/teacher/dashboard');
@@ -292,7 +312,7 @@ export function App() {
     async function initSession() {
       if (route.type === 'student') {
         const stored = getStoredUser();
-        const token = authToken || getStoredToken();
+        const token = getStoredToken();
         if (!token || stored?.role !== 'student') {
           if (isMounted) navigate('/student/login');
           return;
@@ -308,7 +328,7 @@ export function App() {
         void syncStudentData(stored.user_id, token);
       } else if (route.type === 'teacher') {
         const stored = getStoredUser();
-        const token = authToken || getStoredToken();
+        const token = getStoredToken();
         if (!token || stored?.role !== 'teacher') {
           if (isMounted) navigate('/teacher/login');
           return;

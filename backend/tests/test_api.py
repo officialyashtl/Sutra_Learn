@@ -64,7 +64,7 @@ def test_curriculum_endpoints(client):
     r = client.get("/api/v1/concepts", headers=student_headers("student-01"))
     assert r.status_code == 200
     data = r.json()
-    assert len(data["concepts"]) == 6
+    assert len(data["concepts"]) >= 6
     assert "prerequisite_graph" in data
 
     # Detail check

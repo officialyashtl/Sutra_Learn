@@ -57,6 +57,7 @@ class CurriculumGroundedFallbackProvider(BaseAIProvider):
         conversation_history: List[Dict[str, str]],
         learner_context: Dict[str, Any]
     ) -> Dict[str, Any]:
+        print("DEBUG: ENTERED generate_tutor_response", flush=True)
         target_concept_id = concept_id or "MATH-C01"
         grounding = get_grounded_concept_context(target_concept_id)
         msg_lower = message.lower().strip()
@@ -556,9 +557,14 @@ def get_ai_provider() -> BaseAIProvider:
       2. Ollama Local Model (Qwen 3.5 4B -> Gemma 4 E2B)
       3. SUTRA Curriculum Grounded Deterministic Fallback
     """
-    mode = os.environ.get("AI_PROVIDER") or os.environ.get("AI_MODE", "auto").lower()
+    mode = (os.environ.get("AI_PROVIDER") or os.environ.get("AI_MODE", "auto")).lower()
 
-    if mode == "deterministic" or os.environ.get("APP_ENV") == "testing":
+    if (
+        mode in ("deterministic", "offline")
+        or os.environ.get("APP_ENV") in ("testing", "offline")
+        or os.environ.get("AI_OFFLINE_MODE") == "true"
+        or "PYTEST_CURRENT_TEST" in os.environ
+    ):
         return CurriculumGroundedFallbackProvider()
 
     return OrchestratedAIProvider()

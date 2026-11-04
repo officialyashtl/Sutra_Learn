@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import type { Concept, ConceptProgress, Learner, StudentAttemptHistoryItem, LearnerMetrics } from '../types';
+import { clearStoredAuth } from '../services/auth';
+import { AUTH_EXPIRED_EVENT } from '../api/client';
+import type { Concept, ConceptProgress, Learner, StudentAttemptHistoryItem, LearnerMetrics, SpacedRetrievalQueue } from '../types';
 
 interface StudentHomeProps {
   learner: Learner;
@@ -24,6 +26,7 @@ export function StudentHome({
 }: StudentHomeProps) {
   const [recentAttempts, setRecentAttempts] = useState<StudentAttemptHistoryItem[]>([]);
   const [canonicalMetrics, setCanonicalMetrics] = useState<LearnerMetrics | null>(null);
+  const [spacedQueue, setSpacedQueue] = useState<SpacedRetrievalQueue | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -33,6 +36,11 @@ export function StudentHome({
         
         // 1. Fetch recent attempts
         const res = await fetch(`${apiBaseUrl}/api/v1/learners/${learner.id}/attempts`, { headers });
+        if (res.status === 401) {
+          clearStoredAuth();
+          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+          return;
+        }
         if (res.ok && isMounted) {
           const data = await res.json();
           setRecentAttempts((data.attempts || []).slice(0, 5));
@@ -40,9 +48,26 @@ export function StudentHome({
 
         // 2. Fetch canonical single-source-of-truth metrics
         const mRes = await fetch(`${apiBaseUrl}/api/v1/learners/${learner.id}/metrics`, { headers });
+        if (mRes.status === 401) {
+          clearStoredAuth();
+          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+          return;
+        }
         if (mRes.ok && isMounted) {
           const mData = await mRes.json();
           setCanonicalMetrics(mData);
+        }
+
+        // 3. Fetch spaced retrieval retention queue
+        const srRes = await fetch(`${apiBaseUrl}/api/v1/learners/${learner.id}/spaced-retrieval`, { headers });
+        if (srRes.status === 401) {
+          clearStoredAuth();
+          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+          return;
+        }
+        if (srRes.ok && isMounted) {
+          const srData = await srRes.json();
+          setSpacedQueue(srData);
         }
       } catch {
         // preserve clean state
@@ -158,6 +183,47 @@ export function StudentHome({
           </div>
         </div>
       </section>
+
+      {/* 1B. COGNITIVE SPACED RETRIEVAL RECOMMENDATION (If review due) */}
+      {spacedQueue && spacedQueue.due_count > 0 && (
+        <section
+          className="editorial-card"
+          style={{
+            marginBottom: 'var(--space-6)',
+            borderLeft: '4px solid var(--sutra-mocha)',
+            backgroundColor: 'var(--surface-warm)',
+            padding: 'var(--space-5) var(--space-6)',
+          }}
+          aria-label="Spaced Retrieval Practice Notification"
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <span className="editorial-kicker" style={{ margin: 0, color: 'var(--sutra-mocha)' }}>
+                  LONG-TERM RETENTION &bull; ACTIVE RECALL WINDOW
+                </span>
+                <span className="status-pill needs_reinforcement">
+                  {spacedQueue.due_count} {spacedQueue.due_count === 1 ? 'Concept' : 'Concepts'} Due
+                </span>
+              </div>
+              <h3 className="serif-title" style={{ fontSize: '19px', color: 'var(--sutra-espresso)', marginBottom: '4px' }}>
+                Memory Check: {spacedQueue.review_queue[0].concept_title}
+              </h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', maxWidth: '680px', margin: 0 }}>
+                {spacedQueue.review_queue[0].cognitive_rationale}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn-primary"
+              style={{ padding: '8px 18px', fontSize: '13px', whiteSpace: 'nowrap' }}
+              onClick={() => onOpenAssessment(spacedQueue.review_queue[0].concept_id)}
+            >
+              Start Retention Check &rarr;
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* 2. PRIMARY LEARNING FEATURE (Visually Dominant Next Action) */}
       {currentConcept && (
