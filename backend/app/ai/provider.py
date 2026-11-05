@@ -561,7 +561,6 @@ def get_ai_provider() -> BaseAIProvider:
 
     if (
         mode in ("deterministic", "offline")
-        or os.environ.get("APP_ENV") in ("testing", "offline")
         or os.environ.get("AI_OFFLINE_MODE") == "true"
         or "PYTEST_CURRENT_TEST" in os.environ
     ):

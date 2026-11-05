@@ -14,6 +14,14 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: APP_ENV
+        value: production
+      - key: AI_MODE
+        value: auto
+      - key: AI_PRIMARY_PROVIDER
+        value: gemini
+      - key: GEMINI_MODEL
+        value: gemini-flash-lite-latest
       - key: SUTRA_DB_PATH
         value: /var/data/sutra_learn.db
       - key: SUTRA_SECRET_KEY

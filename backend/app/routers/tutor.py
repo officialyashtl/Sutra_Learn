@@ -43,6 +43,8 @@ class TutorChatResponse(BaseModel):
     conversation_id: str
     message_id: str
     answer: str
+    explanation: Optional[str] = None
+    response: Optional[str] = None
     response_type: str
     hints: List[str]
     concept_id: Optional[str]
@@ -251,10 +253,13 @@ async def tutor_chat(
         "timestamp_utc": datetime.now(timezone.utc).isoformat()
     }))
 
+    ans_text = raw_resp["answer"]
     return TutorChatResponse(
         conversation_id=conv_id,
         message_id=assistant_msg_id,
-        answer=raw_resp["answer"],
+        answer=ans_text,
+        explanation=ans_text,
+        response=ans_text,
         response_type=raw_resp.get("response_type", "guided_explanation"),
         hints=raw_resp.get("hints", []),
         concept_id=raw_resp.get("concept_id", req.concept_id),

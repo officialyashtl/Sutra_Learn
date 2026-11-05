@@ -61,7 +61,7 @@ class AIProviderRegistry:
         Determines the ordered list of eligible provider adapters based on operating mode,
         activation flags, circuit breaker status, and local model availability.
         """
-        if self.settings.app_env == "testing" or os.environ.get("APP_ENV") == "testing" or "PYTEST_CURRENT_TEST" in os.environ:
+        if "PYTEST_CURRENT_TEST" in os.environ:
             # Fast deterministic testing path
             return []
 

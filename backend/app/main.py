@@ -11,6 +11,11 @@ load_dotenv(override=False)
 load_dotenv("backend/.env", override=False)
 load_dotenv("../.env", override=False)
 
+# In Render or production deployment, ensure APP_ENV is production (not testing) unless running pytest
+if os.environ.get("RENDER") == "true" or os.environ.get("APP_ENV") == "testing":
+    if "PYTEST_CURRENT_TEST" not in os.environ:
+        os.environ["APP_ENV"] = "production"
+
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
