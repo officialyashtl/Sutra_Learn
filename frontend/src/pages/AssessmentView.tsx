@@ -47,6 +47,7 @@ export function AssessmentView({
 
   // Completed Evaluation / Results State
   const [completedResult, setCompletedResult] = useState<AssessmentResultResponse | null>(null);
+  const [aiLoading, setAiLoading] = useState<boolean>(false);
 
   // Submissions accumulator & session tracking
   const sessionIdRef = useRef<string>(`sess-${crypto.randomUUID()}`);
@@ -60,6 +61,29 @@ export function AssessmentView({
       // Ignore offline store lookup failures
     }
   }, []);
+
+
+  const requestAiGuidance = useCallback(async (resultId: string) => {
+    setAiLoading(true);
+    try {
+      const authHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+      };
+      const resGuidance = await fetch(`${apiBaseUrl}/api/v1/assessments/results/${resultId}/guidance`, {
+        method: 'POST',
+        headers: authHeaders,
+      });
+      if (resGuidance.ok) {
+        const guidanceData = await resGuidance.json();
+        setCompletedResult((prev) => prev ? { ...prev, ai_guidance: guidanceData } : prev);
+      }
+    } catch (err) {
+      console.warn('AI guidance asynchronous fetch error:', err);
+    } finally {
+      setAiLoading(false);
+    }
+  }, [apiBaseUrl, authToken]);
 
   // Check for existing persisted assessment result, or fetch questions
   const loadAssessment = useCallback(async (forceRetake = false) => {
@@ -262,9 +286,14 @@ export function AssessmentView({
 
       const resultData: AssessmentResultResponse = await res.json();
       setCompletedResult(resultData);
+      setEvaluating(false);
 
       // Trigger parent callback to synchronize unlocked concepts and progress
       onCompleteEvaluation(concept.id);
+
+      if (resultData && resultData.id && (!resultData.ai_guidance || resultData.ai_guidance.provider === 'sutra_deterministic')) {
+        void requestAiGuidance(resultData.id);
+      }
     } catch (err: any) {
       console.error('Assessment evaluation error:', err);
       setError(err.message || 'Error calculating assessment outcome.');
@@ -342,7 +371,7 @@ export function AssessmentView({
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-              {concept.code} &bull; {new Date(completedResult.created_at).toLocaleDateString()}
+              {concept.code} &bull; {completedResult.completed_at || completedResult.created_at ? new Date(completedResult.completed_at || completedResult.created_at!).toLocaleDateString() : 'Completed'}
             </span>
             {completedResult.can_advance && (
               <span
@@ -423,27 +452,43 @@ export function AssessmentView({
               marginBottom: 'var(--space-6)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
-              <div
-                style={{
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'var(--sutra-mocha)',
-                  color: '#ffffff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  fontFamily: 'var(--font-serif)',
-                }}
-              >
-                S
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <div
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'var(--sutra-mocha)',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-serif)',
+                  }}
+                >
+                  S
+                </div>
+                <span className="editorial-kicker" style={{ margin: 0 }}>
+                  SUTRA AI &bull; Personalized Learning Guidance
+                </span>
               </div>
-              <span className="editorial-kicker" style={{ margin: 0 }}>
-                SUTRA AI &bull; Personalized Learning Guidance
-              </span>
+              {aiLoading ? (
+                <span style={{ fontSize: '12px', color: 'var(--sutra-mocha)', fontStyle: 'italic' }}>
+                  Synthesizing Socratic insights...
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ fontSize: '11px', padding: '2px 8px' }}
+                  onClick={() => void requestAiGuidance(completedResult.id)}
+                >
+                  ⟳ Refresh AI
+                </button>
+              )}
             </div>
 
             <p style={{ fontSize: '15px', color: 'var(--sutra-espresso)', lineHeight: 1.6, margin: '0 0 var(--space-4) 0' }}>
@@ -451,7 +496,7 @@ export function AssessmentView({
             </p>
 
             {/* Strengths */}
-            {completedResult.ai_guidance.strengths && completedResult.ai_guidance.strengths.length > 0 && (
+            {completedResult.ai_guidance && completedResult.ai_guidance.strengths && Array.isArray(completedResult.ai_guidance.strengths) && completedResult.ai_guidance.strengths.length > 0 && (
               <div style={{ marginBottom: 'var(--space-4)' }}>
                 <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--sutra-mocha)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Demonstrated Strengths
@@ -586,7 +631,7 @@ export function AssessmentView({
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
             <h2 className="serif-title" style={{ fontSize: '20px', color: 'var(--sutra-espresso)', margin: 0 }}>
-              Question-by-Question Review ({completedResult.questions_detail.length})
+              Question-by-Question Review ({(completedResult.questions_detail || []).length})
             </h2>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
               Complete diagnostic record & mathematical solutions
@@ -594,7 +639,7 @@ export function AssessmentView({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-            {completedResult.questions_detail.map((qDetail, idx) => {
+            {(completedResult.questions_detail || []).map((qDetail, idx) => {
               const isCorrect = qDetail.is_correct;
 
               return (
@@ -651,7 +696,7 @@ export function AssessmentView({
 
                   {/* Options List */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', margin: 'var(--space-4) 0' }}>
-                    {qDetail.options.map((opt) => {
+                    {(qDetail.options || []).map((opt) => {
                       const isStudentSelection = qDetail.selected_option_id === opt.id;
                       const isCorrectAnswer = qDetail.correct_option_id === opt.id;
 
@@ -855,7 +900,7 @@ export function AssessmentView({
 
         {/* Option Selection Group */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', margin: 'var(--space-6) 0' }} role="radiogroup" aria-labelledby="question-prompt">
-          {currentQ.options.map((opt) => {
+          {(currentQ?.options || []).map((opt) => {
             const isSelected = selectedOption === opt.id;
             let borderCol = 'var(--border-default)';
             let bgCol = 'var(--surface-white)';

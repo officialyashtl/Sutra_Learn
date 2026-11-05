@@ -118,6 +118,7 @@ class QuestionResultDetail(BaseModel):
     misconception_tag: str
     misconception_explanation: Optional[str] = None
     explanation: str
+    options: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class AssessmentResultResponse(BaseModel):
@@ -134,9 +135,17 @@ class AssessmentResultResponse(BaseModel):
     next_concept_id: Optional[str] = None
     next_concept_title: Optional[str] = None
     can_advance: bool
-    questions_detail: List[QuestionResultDetail]
+    questions_detail: List[QuestionResultDetail] = Field(default_factory=list)
     misconceptions_detected: List[str] = Field(default_factory=list)
     weak_concepts: List[str] = Field(default_factory=list)
-    ai_guidance: Dict[str, Any] = Field(default_factory=dict)
+    ai_guidance: Optional[Dict[str, Any]] = Field(default_factory=dict)
     completed_at: str
+    created_at: Optional[str] = None
+
+    def __init__(self, **data: Any):
+        if "completed_at" in data and not data.get("created_at"):
+            data["created_at"] = data["completed_at"]
+        elif "created_at" in data and not data.get("completed_at"):
+            data["completed_at"] = data["created_at"]
+        super().__init__(**data)
 

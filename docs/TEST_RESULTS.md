@@ -113,3 +113,4 @@ dist/assets/index-ChaIP5VW.js   476.39 kB │ gzip: 114.93 kB
 | **Backend** | `https://sutra-learn-api.onrender.com` | `/api/v1/assessments/results/MATH-C01` | **200 OK** | Persisted result retrieved with matching questions and guidance |
 | **Backend** | `https://sutra-learn-api.onrender.com` | `/api/v1/tutor/chat` | **200 OK** | Real Gemini inference (`gemini-3.1-flash-lite`) verified |
 | **Frontend** | `https://sutralearn.vercel.app` | `/` | **200 OK** | Static bundle delivered with responsive layout |
+

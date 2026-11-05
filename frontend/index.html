@@ -2,15 +2,142 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SUTRA LEARN — Learning, thoughtfully connected</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- Canonical & SEO Directives -->
+    <title>SUTRA LEARN — Grounded AI & Deterministic Adaptive Learning for NCERT Mathematics</title>
+    <link rel="canonical" href="https://sutralearn.vercel.app/" />
+    <meta
+      name="description"
+      content="SUTRA LEARN is an authoritative adaptive learning platform for NCERT Class 8 Mathematics. Decouples deterministic pedagogical decisions from Google Gemini AI tutoring to guarantee 100% explainability, reproducible mastery, and zero hallucinated progress."
+    />
+    <meta
+      name="keywords"
+      content="SUTRA LEARN, NCERT Class 8 Mathematics, Adaptive Learning, AI Math Tutor, Google Gemini, Education Technology, Socratic Tutoring, Cognitive Misconception Diagnosis, Spaced Retrieval, Yash TL"
+    />
+    <meta name="author" content="Yash TL" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://sutralearn.vercel.app/" />
+    <meta property="og:site_name" content="SUTRA LEARN" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:title" content="SUTRA LEARN — Grounded AI & Deterministic Adaptive Learning" />
+    <meta
+      property="og:description"
+      content="NCERT Class 8 Mathematics grounded adaptive learning platform. Pure deterministic pedagogical rules powered by Google Gemini AI Socratic tutoring."
+    />
+    <meta property="og:image" content="https://sutralearn.vercel.app/screenshot.png" />
+    <meta property="og:image:alt" content="SUTRA LEARN Platform Interface" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://sutralearn.vercel.app/" />
+    <meta name="twitter:title" content="SUTRA LEARN — Grounded AI & Deterministic Adaptive Learning" />
+    <meta
+      name="twitter:description"
+      content="NCERT Class 8 Mathematics grounded adaptive learning platform with Google Gemini AI tutoring and 100% authoritative server scoring."
+    />
+    <meta name="twitter:image" content="https://sutralearn.vercel.app/screenshot.png" />
+    <meta name="twitter:creator" content="@officialyashtl" />
+
+    <!-- Geographic & Regional Targeting (GEO) -->
+    <meta name="geo.region" content="IN" />
+    <meta name="geo.placename" content="New Delhi, India" />
+    <meta name="geo.position" content="28.6139;77.2090" />
+    <meta name="ICBM" content="28.6139, 77.2090" />
+
+    <!-- Web Application Manifest & Theme -->
+    <meta name="theme-color" content="#FAF7F2" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="SUTRA LEARN" />
+
+    <!-- Preconnect Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Structured Data (JSON-LD) for AEO & GEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "EducationalOrganization",
+            "@id": "https://sutralearn.vercel.app/#organization",
+            "name": "SUTRA LEARN",
+            "url": "https://sutralearn.vercel.app/",
+            "logo": "https://sutralearn.vercel.app/favicon.svg",
+            "founder": {
+              "@type": "Person",
+              "name": "Yash TL"
+            },
+            "description": "Adaptive learning organisation delivering grounded AI tutoring and deterministic cognitive evaluation for school mathematics."
+          },
+          {
+            "@type": "Course",
+            "@id": "https://sutralearn.vercel.app/#course",
+            "name": "NCERT Class 8 Mathematics Mastery",
+            "description": "Comprehensive 30-concept adaptive learning syllabus covering Integer Arithmetic, Linear Equations, Quadrilaterals, Mensuration, and Exponents.",
+            "provider": {
+              "@id": "https://sutralearn.vercel.app/#organization"
+            },
+            "educationalLevel": "Grade 8",
+            "educationalCredentialAwarded": "Class 8 Mathematics Concept Mastery",
+            "inLanguage": "en",
+            "hasCourseInstance": {
+              "@type": "CourseInstance",
+              "courseMode": "Online / Hybrid",
+              "courseWorkload": "Self-paced adaptive"
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://sutralearn.vercel.app/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is SUTRA LEARN?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "SUTRA LEARN (Student Understanding, Targeted Reinforcement & Adaptation) is an intelligent adaptive learning platform designed specifically for NCERT Class 8 Mathematics. It couples deterministic pedagogical decision-making with Google Gemini AI tutoring to provide explainable mastery progression."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How does SUTRA LEARN evaluate student mastery?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "SUTRA LEARN uses a pure, deterministic adaptive engine on the backend. It calculates weighted scores factoring in unassisted vs assisted attempts, enforces a minimum evidence gate of 3 distinct items, and produces five deterministic outcomes: CONFIRM, SCAFFOLD, STRETCH, BRIDGE_BACK, or TEACHER_REVIEW. Generative AI never alters scores or mastery."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How does SUTRA LEARN diagnose math misconceptions?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Every distractor option across the 30-concept curriculum is tagged with research-backed cognitive patterns, such as SIGN_ERROR or DISTRIBUTIVE_SIGN. When a student chooses an incorrect option, the platform explains the exact mathematical principle and suggests targeted reinforcement."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can SUTRA LEARN function offline?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. SUTRA LEARN features an IndexedDB local store and Service Worker cache. Students can review cached concepts and complete diagnostic assessments offline; queued attempts automatically reconcile with the backend upon network reconnection."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

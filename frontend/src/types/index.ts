@@ -357,6 +357,7 @@ export interface AssessmentResultResponse {
   questions_detail: QuestionResultDetail[];
   ai_guidance: AIGuidance;
   created_at: string;
+  completed_at?: string | null;
 }
 
 export interface AssessmentSubmissionPayload {

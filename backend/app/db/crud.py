@@ -1080,6 +1080,25 @@ def get_assessment_result_by_id(
     }
 
 
+def update_assessment_result_guidance(
+    conn: sqlite3.Connection,
+    result_id: str,
+    ai_guidance: Dict[str, Any]
+) -> bool:
+    """Updates the AI guidance payload of a persisted assessment result."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        UPDATE assessment_results
+        SET ai_guidance_json = ?
+        WHERE id = ?
+        """,
+        (json.dumps(ai_guidance), result_id)
+    )
+    conn.commit()
+    return cursor.rowcount > 0
+
+
 def get_learner_assessment_results(
     conn: sqlite3.Connection,
     learner_id: str

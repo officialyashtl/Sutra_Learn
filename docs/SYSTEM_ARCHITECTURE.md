@@ -120,3 +120,4 @@ flowchart TB
 | **Database** | SQLite3 | 3.39+ | Zero-configuration ACID transactional database |
 | **Test Automation** | pytest | 9.2.0 | Automated backend unit and integration test suite |
 | **HTTP Client** | httpx | 0.27+ | Asynchronous HTTP testing and external API calls |
+

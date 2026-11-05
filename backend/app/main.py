@@ -16,7 +16,8 @@ if os.environ.get("RENDER") == "true" or os.environ.get("APP_ENV") == "testing":
     if "PYTEST_CURRENT_TEST" not in os.environ:
         os.environ["APP_ENV"] = "production"
 
-from fastapi import FastAPI, Request, Response
+from typing import Dict, Any
+from fastapi import FastAPI, Request, Response, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -162,6 +163,16 @@ app.include_router(auth.router)
 app.include_router(tutor.router)
 app.include_router(educator_assistant.router)
 app.include_router(ai.router)
+
+
+@app.get("/results/{identifier}")
+def root_results_alias(
+    identifier: str,
+    current_user: Dict[str, Any] = Depends(auth.get_current_user),
+    conn=Depends(get_db_connection)
+):
+    """Direct root alias for /results/{identifier} ensuring no 404 on un-prefixed requests."""
+    return assessment.get_assessment_result_unified(identifier, current_user, conn)
 
 
 @app.get("/api/v1/health")

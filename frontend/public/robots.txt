@@ -1,0 +1,17 @@
+# SUTRA LEARN — Search Engine Optimization & Crawling Directives
+# Disallow indexing on student records, authenticated views, and internal API proxies
+
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /sitemap.xml
+Allow: /favicon.svg
+
+# Security & Privacy Boundaries: Protect authenticated student & teacher portals
+Disallow: /student/
+Disallow: /teacher/
+Disallow: /api/
+
+# Canonical Sitemap
+Sitemap: https://sutralearn.vercel.app/sitemap.xml
+

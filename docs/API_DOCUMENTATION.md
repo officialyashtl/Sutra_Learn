@@ -330,3 +330,4 @@ Enables human educators to clinically override an automated adaptive decision wi
 
 ### `GET /api/v1/teacher/audit`
 Returns categorized system audit logs across security rejections, pedagogical interventions, and authorized actions.
+

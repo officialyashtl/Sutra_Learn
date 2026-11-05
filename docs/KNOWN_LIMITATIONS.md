@@ -38,3 +38,4 @@
 ### 3.1 Subject & Grade Focus
 - **Context:** SUTRA LEARN is purpose-built and calibrated specifically for **NCERT Class 8 Mathematics**, comprising 30 comprehensive concepts spanning Integer Arithmetic, Linear Equations, Quadrilaterals, Mensuration, and Exponents.
 - **Extensibility:** The DAG-based curriculum registry is schema-driven and designed to ingest Class 9 and Class 10 mathematics graphs by adding concept and question definitions to `backend/app/content/`.
+

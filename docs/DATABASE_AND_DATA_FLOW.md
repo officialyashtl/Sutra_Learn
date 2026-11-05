@@ -215,3 +215,4 @@ sequenceDiagram
 - **Production Durability Recommendation:**
   1. Attach a Render Persistent Disk mounted at `/var/data/sutra_learn.db` with `SUTRA_DB_PATH=/var/data/sutra_learn.db`.
   2. Or configure a managed PostgreSQL / Turso distributed SQLite instance via environment configuration without requiring changes to application domain logic.
+

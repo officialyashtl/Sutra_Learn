@@ -1,0 +1,387 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 960" width="100%" height="100%">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap');
+      text { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+      .title { font-size: 28px; font-weight: 800; fill: #291C0E; letter-spacing: -0.5px; }
+      .subtitle { font-size: 14px; font-weight: 500; fill: #6B5B52; }
+      .badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+      .section-header { font-size: 15px; font-weight: 700; fill: #291C0E; letter-spacing: -0.2px; }
+      .card-title { font-size: 13px; font-weight: 700; fill: #291C0E; }
+      .card-body { font-size: 11px; font-weight: 400; fill: #5C4E44; line-height: 1.4; }
+      .arrow { stroke: #8C6D58; stroke-width: 2; fill: none; }
+      .arrow-accent { stroke: #2E7D32; stroke-width: 2.2; fill: none; }
+      .arrow-amber { stroke: #D97706; stroke-width: 2.2; fill: none; }
+      .arrow-ai { stroke: #2563EB; stroke-width: 2.2; fill: none; stroke-dasharray: 4,4; }
+      .shadow { filter: drop-shadow(0px 3px 6px rgba(41, 28, 14, 0.05)); }
+    </style>
+    
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#8C6D58" />
+    </marker>
+    <marker id="arrowhead-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#2E7D32" />
+    </marker>
+    <marker id="arrowhead-amber" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#D97706" />
+    </marker>
+    <marker id="arrowhead-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#2563EB" />
+    </marker>
+  </defs>
+
+  <!-- Background Canvas: Earthbound Warm Ivory -->
+  <rect width="1400" height="960" fill="#FAF7F2" />
+  
+  <!-- Subtle Header Border -->
+  <line x1="40" y1="90" x2="1360" y2="90" stroke="#E6DFD5" stroke-width="1.5" />
+
+  <!-- Header Banner -->
+  <g transform="translate(40, 32)">
+    <rect x="0" y="0" width="36" height="36" rx="8" fill="#8C6D58" />
+    <text x="18" y="24" text-anchor="middle" font-size="20" font-weight="900" fill="#FAF7F2">S</text>
+    <text x="50" y="24" class="title">SUTRA LEARN</text>
+    <text x="250" y="22" class="badge" fill="#2E7D32">● PRODUCTION CERTIFIED</text>
+    <text x="50" y="46" class="subtitle">End-to-End Architectural Dataflow &amp; Dual-Engine Intelligence Architecture</text>
+    <text x="1050" y="24" font-size="12" font-weight="600" fill="#8C6D58">NCERT Class 8 Curriculum • Google Gemini Flash</text>
+    <text x="1050" y="44" font-size="11" font-weight="500" fill="#A89B91">Deterministic Scoring • SQLite WAL</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- COLUMN 1: CLIENT LAYER (SPA)               -->
+  <!-- ========================================== -->
+  <g transform="translate(40, 110)">
+    <!-- Container -->
+    <rect width="280" height="810" rx="12" fill="#F4EFEA" stroke="#E0D7CC" stroke-width="1.5" />
+    
+    <g transform="translate(20, 24)">
+      <rect x="0" y="0" width="130" height="22" rx="4" fill="#E6DFD5" />
+      <text x="10" y="15" class="badge" fill="#5C4E44">1. CLIENT LAYER</text>
+      <text x="0" y="42" class="section-header">Frontend SPA</text>
+      <text x="0" y="58" font-size="11" fill="#8C6D58">React 18 + Vite + Tailwind</text>
+    </g>
+
+    <!-- Student Entry Card -->
+    <g transform="translate(20, 95)" class="shadow">
+      <rect width="240" height="85" rx="8" fill="#FFFFFF" stroke="#E0D7CC" stroke-width="1" />
+      <circle cx="20" cy="22" r="6" fill="#2E7D32" />
+      <text x="34" y="26" class="card-title">Student Entry</text>
+      <text x="20" y="48" class="card-body">POST /auth/session or /auth/login</text>
+      <text x="20" y="65" class="card-body">Issues JWT + Session Storage</text>
+    </g>
+
+    <!-- Student Dashboard Card -->
+    <g transform="translate(20, 195)" class="shadow">
+      <rect width="240" height="110" rx="8" fill="#FFFFFF" stroke="#E0D7CC" stroke-width="1" />
+      <text x="16" y="24" class="card-title">Student Learning Hub</text>
+      <text x="16" y="45" class="card-body">• Mastery Score Overview</text>
+      <text x="16" y="62" class="card-body">• NCERT Interactive Lessons</text>
+      <text x="16" y="79" class="card-body">• Spaced Retrieval Queue</text>
+      <text x="16" y="96" class="card-body">• Diagnostic Quiz Interface</text>
+    </g>
+
+    <!-- AI Tutor UI Card -->
+    <g transform="translate(20, 320)" class="shadow">
+      <rect width="240" height="100" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.2" />
+      <rect x="16" y="12" width="70" height="18" rx="4" fill="#EFF6FF" />
+      <text x="22" y="25" font-size="10" font-weight="700" fill="#2563EB">AI TUTOR</text>
+      <text x="94" y="26" class="card-title">Socratic Chat</text>
+      <text x="16" y="48" class="card-body">• 6 Pedagogical Modes</text>
+      <text x="16" y="65" class="card-body">• Misconception Walkthroughs</text>
+      <text x="16" y="82" class="card-body">• SUTRA-Themed Pulse Loader</text>
+    </g>
+
+    <!-- Teacher Entry Card -->
+    <g transform="translate(20, 435)" class="shadow">
+      <rect width="240" height="85" rx="8" fill="#FFFFFF" stroke="#E0D7CC" stroke-width="1" />
+      <circle cx="20" cy="22" r="6" fill="#D97706" />
+      <text x="34" y="26" class="card-title">Teacher Portal</text>
+      <text x="20" y="48" class="card-body">POST /auth/login (teacher-01)</text>
+      <text x="20" y="65" class="card-body">Role-Based Access Control</text>
+    </g>
+
+    <!-- Teacher Dashboard Card -->
+    <g transform="translate(20, 535)" class="shadow">
+      <rect width="240" height="120" rx="8" fill="#FFFFFF" stroke="#E0D7CC" stroke-width="1" />
+      <text x="16" y="24" class="card-title">Educator Intelligence</text>
+      <text x="16" y="45" class="card-body">• Cohort Mastery Grid</text>
+      <text x="16" y="62" class="card-body">• Struggle Heatmap &amp; Alerts</text>
+      <text x="16" y="79" class="card-body">• Student Attempt Histories</text>
+      <text x="16" y="98" class="card-body" font-weight="600" fill="#D97706">Clinical Overrides Enabled</text>
+    </g>
+
+    <!-- Client-Side State -->
+    <g transform="translate(20, 670)" class="shadow">
+      <rect width="240" height="120" rx="8" fill="#FFFFFF" stroke="#E0D7CC" stroke-width="1" />
+      <text x="16" y="24" class="card-title">Security &amp; Client State</text>
+      <text x="16" y="45" class="card-body">• Token in sessionStorage</text>
+      <text x="16" y="62" class="card-body">• Bearer Header Injection</text>
+      <text x="16" y="79" class="card-body">• Zero API Secrets in Bundle</text>
+      <text x="16" y="96" class="card-body">• Auto-logout on 401</text>
+    </g>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- COLUMN 2: FASTAPI BACKEND GATEWAY          -->
+  <!-- ========================================== -->
+  <g transform="translate(360, 110)">
+    <rect width="300" height="810" rx="12" fill="#F4EFEA" stroke="#E0D7CC" stroke-width="1.5" />
+    
+    <g transform="translate(20, 24)">
+      <rect x="0" y="0" width="145" height="22" rx="4" fill="#E6DFD5" />
+      <text x="10" y="15" class="badge" fill="#5C4E44">2. APPLICATION LAYER</text>
+      <text x="0" y="42" class="section-header">FastAPI Backend Engine</text>
+      <text x="0" y="58" font-size="11" fill="#8C6D58">Starlette + Uvicorn + Pydantic</text>
+    </g>
+
+    <!-- Gateway & Auth Filter -->
+    <g transform="translate(20, 80)" class="shadow">
+      <rect width="260" height="85" rx="8" fill="#FFFFFF" stroke="#8C6D58" stroke-width="1.2" />
+      <text x="16" y="24" class="card-title">API Gateway &amp; Middleware</text>
+      <text x="16" y="46" class="card-body">• JWT Authentication Validator</text>
+      <text x="16" y="63" class="card-body">• Correlation ID Generation (UUIDv4)</text>
+    </g>
+
+    <!-- Assessment Router Card -->
+    <g transform="translate(20, 180)" class="shadow">
+      <rect width="260" height="120" rx="8" fill="#FFFFFF" stroke="#2E7D32" stroke-width="1.2" />
+      <rect x="16" y="12" width="130" height="18" rx="4" fill="#E8F5E9" />
+      <text x="22" y="25" font-size="10" font-weight="700" fill="#2E7D32">AUTHORITATIVE SCORER</text>
+      <text x="16" y="50" class="card-title">/assessments/submit</text>
+      <text x="16" y="70" class="card-body">• Compares student vs canonical key</text>
+      <text x="16" y="87" class="card-body">• Server-Authoritative % Calculation</text>
+      <text x="16" y="104" class="card-body">• Misconception Classification</text>
+    </g>
+
+    <!-- Curriculum & Lessons Router -->
+    <g transform="translate(20, 315)" class="shadow">
+      <rect width="260" height="95" rx="8" fill="#FFFFFF" stroke="#E0D7CC" stroke-width="1" />
+      <text x="16" y="24" class="card-title">Curriculum &amp; Graph Routers</text>
+      <text x="16" y="46" class="card-body">/concepts/graph &amp; /lessons/{id}</text>
+      <text x="16" y="63" class="card-body">• 30 NCERT Concepts Hierarchy</text>
+      <text x="16" y="80" class="card-body">• Prerequisite Dependency Solver</text>
+    </g>
+
+    <!-- AI Tutor Orchestrator Router -->
+    <g transform="translate(20, 425)" class="shadow">
+      <rect width="260" height="125" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.2" />
+      <rect x="16" y="12" width="130" height="18" rx="4" fill="#EFF6FF" />
+      <text x="22" y="25" font-size="10" font-weight="700" fill="#2563EB">TUTOR ORCHESTRATOR</text>
+      <text x="16" y="50" class="card-title">/tutor/chat &amp; /tutor/conversations</text>
+      <text x="16" y="70" class="card-body">• Injects NCERT Math Context</text>
+      <text x="16" y="87" class="card-body">• Enforces Socratic Questioning</text>
+      <text x="16" y="104" class="card-body">• Manages Gemini Cascade Execution</text>
+    </g>
+
+    <!-- Adaptive Recommendations Router -->
+    <g transform="translate(20, 565)" class="shadow">
+      <rect width="260" height="100" rx="8" fill="#FFFFFF" stroke="#E0D7CC" stroke-width="1" />
+      <text x="16" y="24" class="card-title">/recommendations</text>
+      <text x="16" y="46" class="card-body">• Next Lesson Progression Rules</text>
+      <text x="16" y="63" class="card-body">• Spaced Repetition Scheduling</text>
+      <text x="16" y="80" class="card-body">• Remedial / Core / Advanced</text>
+    </g>
+
+    <!-- Teacher & Audit Router -->
+    <g transform="translate(20, 680)" class="shadow">
+      <rect width="260" height="110" rx="8" fill="#FFFFFF" stroke="#D97706" stroke-width="1.2" />
+      <text x="16" y="24" class="card-title">/teacher &amp; Audit Services</text>
+      <text x="16" y="46" class="card-body">• GET /teacher/cohort analytics</text>
+      <text x="16" y="63" class="card-body">• POST /teacher/override processing</text>
+      <text x="16" y="80" class="card-body">• Correlation ID Audit Dispatcher</text>
+    </g>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- COLUMN 3: DUAL-ENGINE INTELLIGENCE LAYER   -->
+  <!-- ========================================== -->
+  <g transform="translate(700, 110)">
+    <rect width="360" height="810" rx="12" fill="#F4EFEA" stroke="#E0D7CC" stroke-width="1.5" />
+    
+    <g transform="translate(20, 24)">
+      <rect x="0" y="0" width="160" height="22" rx="4" fill="#E6DFD5" />
+      <text x="10" y="15" class="badge" fill="#5C4E44">3. DUAL INTELLIGENCE</text>
+      <text x="0" y="42" class="section-header">Hybrid Pedagogical Engine</text>
+      <text x="0" y="58" font-size="11" fill="#8C6D58">Deterministic Precision + Grounded GenAI</text>
+    </g>
+
+    <!-- ENGINE A: DETERMINISTIC ADAPTIVE CORE -->
+    <g transform="translate(20, 80)" class="shadow">
+      <rect width="320" height="310" rx="10" fill="#FFFFFF" stroke="#2E7D32" stroke-width="2" />
+      
+      <rect x="16" y="14" width="160" height="20" rx="4" fill="#E8F5E9" />
+      <text x="24" y="28" font-size="10" font-weight="700" fill="#2E7D32">ENGINE A (DETERMINISTIC)</text>
+      
+      <text x="16" y="54" class="card-title">Mathematical &amp; Progression Truth</text>
+      <text x="16" y="70" font-size="11" font-weight="600" fill="#2E7D32">ZERO HALLUCINATION RISK</text>
+      
+      <!-- Bullet 1 -->
+      <circle cx="24" cy="95" r="3" fill="#2E7D32" />
+      <text x="36" y="98" font-size="11" font-weight="600" fill="#291C0E">Authoritative Scoring:</text>
+      <text x="36" y="114" class="card-body">Calculates scores directly on server.</text>
+      <text x="36" y="128" class="card-body">LLMs are strictly excluded from grading.</text>
+
+      <!-- Bullet 2 -->
+      <circle cx="24" cy="150" r="3" fill="#2E7D32" />
+      <text x="36" y="153" font-size="11" font-weight="600" fill="#291C0E">Misconception Classifier:</text>
+      <text x="36" y="169" class="card-body">Maps distractors to specific cognitive errors</text>
+      <text x="36" y="183" class="card-body">(e.g., Sign transposition, Reciprocals).</text>
+
+      <!-- Bullet 3 -->
+      <circle cx="24" cy="205" r="3" fill="#2E7D32" />
+      <text x="36" y="208" font-size="11" font-weight="600" fill="#291C0E">Mastery State Transition:</text>
+      <text x="36" y="224" class="card-body">Threshold >= 80% marks concept mastered.</text>
+      <text x="36" y="238" class="card-body">Unlocks downstream curriculum nodes.</text>
+
+      <!-- Bullet 4 -->
+      <circle cx="24" cy="260" r="3" fill="#2E7D32" />
+      <text x="36" y="263" font-size="11" font-weight="600" fill="#291C0E">Spaced Retrieval Scheduler:</text>
+      <text x="36" y="279" class="card-body">Ebbinghaus decay curve (1, 3, 7, 14 days).</text>
+    </g>
+
+    <!-- ENGINE B: GROUNDED GEMINI TUTOR -->
+    <g transform="translate(20, 410)" class="shadow">
+      <rect width="320" height="380" rx="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="2" />
+      
+      <rect x="16" y="14" width="165" height="20" rx="4" fill="#EFF6FF" />
+      <text x="24" y="28" font-size="10" font-weight="700" fill="#2563EB">ENGINE B (GENERATIVE AI)</text>
+      
+      <text x="16" y="54" class="card-title">Google Gemini Socratic Guide</text>
+      <text x="16" y="70" font-size="11" font-weight="600" fill="#2563EB">PEDAGOGICAL &amp; EXPLANATORY ONLY</text>
+
+      <!-- Step 1 -->
+      <circle cx="24" cy="95" r="3" fill="#2563EB" />
+      <text x="36" y="98" font-size="11" font-weight="600" fill="#291C0E">Strict NCERT Prompt Guarding:</text>
+      <text x="36" y="114" class="card-body">Injects concept context &amp; misconceptions.</text>
+      <text x="36" y="128" class="card-body">Forbids spoon-feeding final answers.</text>
+
+      <!-- Step 2 -->
+      <circle cx="24" cy="150" r="3" fill="#2563EB" />
+      <text x="36" y="153" font-size="11" font-weight="600" fill="#291C0E">Multi-Model Cloud Cascade:</text>
+      <text x="36" y="169" class="card-body">1. gemini-flash-lite-latest (Primary)</text>
+      <text x="36" y="184" class="card-body">2. gemini-3.1-flash-lite (Surge fallback)</text>
+      <text x="36" y="199" class="card-body">3. gemini-2.5-flash (Resilience tier)</text>
+
+      <!-- Step 3 -->
+      <circle cx="24" cy="225" r="3" fill="#2563EB" />
+      <text x="36" y="228" font-size="11" font-weight="600" fill="#291C0E">Sub-2ms Deterministic Safety Valve:</text>
+      <text x="36" y="244" class="card-body">If cloud rate limits or 503 occurs,</text>
+      <text x="36" y="258" class="card-body">engine produces aligned NCERT hints.</text>
+
+      <!-- Step 4 -->
+      <circle cx="24" cy="285" r="3" fill="#2563EB" />
+      <text x="36" y="288" font-size="11" font-weight="600" fill="#291C0E">Contextual Memory:</text>
+      <text x="36" y="304" class="card-body">Retrieves recent conversation history.</text>
+      <text x="36" y="318" class="card-body">Supports multi-turn interactive tutoring.</text>
+      
+      <!-- Key Boundary Note -->
+      <rect x="16" y="335" width="288" height="32" rx="6" fill="#FEF3C7" stroke="#F59E0B" stroke-width="0.8" />
+      <text x="24" y="355" font-size="10" font-weight="700" fill="#92400E">RULE: Gemini NEVER scores quizzes or alters mastery!</text>
+    </g>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- COLUMN 4: PERSISTENCE & AUDIT LAYER        -->
+  <!-- ========================================== -->
+  <g transform="translate(1090, 110)">
+    <rect width="270" height="810" rx="12" fill="#F4EFEA" stroke="#E0D7CC" stroke-width="1.5" />
+    
+    <g transform="translate(20, 24)">
+      <rect x="0" y="0" width="140" height="22" rx="4" fill="#E6DFD5" />
+      <text x="10" y="15" class="badge" fill="#5C4E44">4. PERSISTENCE LAYER</text>
+      <text x="0" y="42" class="section-header">SQLite Database (WAL)</text>
+      <text x="0" y="58" font-size="11" fill="#8C6D58">ACID Compliance + Foreign Keys</text>
+    </g>
+
+    <!-- Table 1: Users & Sessions -->
+    <g transform="translate(20, 85)" class="shadow">
+      <rect width="230" height="105" rx="8" fill="#FFFFFF" stroke="#E0D7CC" stroke-width="1" />
+      <text x="14" y="24" class="card-title">users &amp; sessions</text>
+      <text x="14" y="46" class="card-body">PK: id (TEXT / UUID)</text>
+      <text x="14" y="62" class="card-body">• username / identifier, role</text>
+      <text x="14" y="78" class="card-body">• hashed_password (PBKDF2/bcrypt)</text>
+      <text x="14" y="94" class="card-body">• created_at, last_active</text>
+    </g>
+
+    <!-- Table 2: Concepts & Lessons -->
+    <g transform="translate(20, 205)" class="shadow">
+      <rect width="230" height="105" rx="8" fill="#FFFFFF" stroke="#E0D7CC" stroke-width="1" />
+      <text x="14" y="24" class="card-title">concepts &amp; lessons</text>
+      <text x="14" y="46" class="card-body">PK: code (e.g. MATH-C01)</text>
+      <text x="14" y="62" class="card-body">• title, order_index, grade</text>
+      <text x="14" y="78" class="card-body">• prerequisite_codes (JSON list)</text>
+      <text x="14" y="94" class="card-body">• content_markdown, examples</text>
+    </g>
+
+    <!-- Table 3: Student Concept Mastery -->
+    <g transform="translate(20, 325)" class="shadow">
+      <rect width="230" height="110" rx="8" fill="#FFFFFF" stroke="#2E7D32" stroke-width="1.2" />
+      <text x="14" y="24" class="card-title">student_concept_mastery</text>
+      <text x="14" y="46" class="card-body">FK: student_id, concept_id</text>
+      <text x="14" y="62" class="card-body">• mastery_score (0.0 to 100.0)</text>
+      <text x="14" y="78" class="card-body">• is_unlocked, attempts_count</text>
+      <text x="14" y="94" class="card-body">• next_review_due (Spaced Rep)</text>
+    </g>
+
+    <!-- Table 4: Attempts & Scoring Records -->
+    <g transform="translate(20, 450)" class="shadow">
+      <rect width="230" height="105" rx="8" fill="#FFFFFF" stroke="#E0D7CC" stroke-width="1" />
+      <text x="14" y="24" class="card-title">assessment_attempts</text>
+      <text x="14" y="46" class="card-body">PK: id | FK: student_id</text>
+      <text x="14" y="62" class="card-body">• score, points, total_questions</text>
+      <text x="14" y="78" class="card-body">• student_answers (JSON)</text>
+      <text x="14" y="94" class="card-body">• diagnosed_misconceptions</text>
+    </g>
+
+    <!-- Table 5: Tutor Conversations & Turns -->
+    <g transform="translate(20, 570)" class="shadow">
+      <rect width="230" height="105" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1" />
+      <text x="14" y="24" class="card-title">tutor_conversations &amp; msgs</text>
+      <text x="14" y="46" class="card-body">PK: id | FK: conversation_id</text>
+      <text x="14" y="62" class="card-body">• sender (user / assistant)</text>
+      <text x="14" y="78" class="card-body">• content, mode, timestamp</text>
+      <text x="14" y="94" class="card-body">• token_usage, latency_ms</text>
+    </g>
+
+    <!-- Table 6: Audit Logs & Traceability -->
+    <g transform="translate(20, 690)" class="shadow">
+      <rect width="230" height="100" rx="8" fill="#FFFFFF" stroke="#8C6D58" stroke-width="1" />
+      <text x="14" y="24" class="card-title">audit_logs (Traceability)</text>
+      <text x="14" y="46" class="card-body">PK: id | correlation_id (UUID)</text>
+      <text x="14" y="62" class="card-body">• event_type, actor_id, target_id</text>
+      <text x="14" y="78" class="card-body">• payload_diff, timestamp</text>
+      <text x="14" y="94" class="card-body">• Immutable audit trail</text>
+    </g>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- INTER-LAYER FLOW ARROWS                    -->
+  <!-- ========================================== -->
+  
+  <!-- Client to Backend Gateway -->
+  <path d="M 320, 240 L 380, 240" class="arrow" marker-end="url(#arrowhead)" />
+  <path d="M 320, 370 L 380, 480" class="arrow-ai" marker-end="url(#arrowhead-blue)" />
+  <path d="M 320, 600 L 380, 730" class="arrow-amber" marker-end="url(#arrowhead-amber)" />
+
+  <!-- Backend Scorer to Deterministic Engine -->
+  <path d="M 640, 240 L 720, 240" class="arrow-accent" marker-end="url(#arrowhead-green)" />
+  
+  <!-- Backend Tutor to Gemini Generative AI Engine -->
+  <path d="M 640, 490 L 720, 500" class="arrow-ai" marker-end="url(#arrowhead-blue)" />
+
+  <!-- Scorer to Tutor Misconception Feed -->
+  <path d="M 500, 300 L 500, 420" class="arrow" marker-end="url(#arrowhead)" />
+  <text x="506" y="365" font-size="9" font-weight="700" fill="#2E7D32">Misconception</text>
+  <text x="506" y="377" font-size="9" font-weight="700" fill="#2E7D32">Context Feed</text>
+
+  <!-- Deterministic Engine to Persistence -->
+  <path d="M 1040, 240 L 1110, 370" class="arrow-accent" marker-end="url(#arrowhead-green)" />
+  <path d="M 1040, 290 L 1110, 500" class="arrow-accent" marker-end="url(#arrowhead-green)" />
+
+  <!-- Generative Engine to Persistence -->
+  <path d="M 1040, 620 L 1110, 620" class="arrow-ai" marker-end="url(#arrowhead-blue)" />
+
+  <!-- Gateway to Audit Log -->
+  <path d="M 500, 790 L 500, 840 L 1110, 840 L 1110, 790" class="arrow" marker-end="url(#arrowhead)" />
+
+</svg>

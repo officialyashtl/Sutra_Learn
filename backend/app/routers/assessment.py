@@ -5,6 +5,7 @@ Requires authenticated caller identity and enforces ownership of submissions.
 
 import uuid
 import logging
+import asyncio
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List
 from fastapi import APIRouter, HTTPException, Depends, Request
@@ -327,6 +328,8 @@ async def complete_assessment(
         sel_text = next((o.text for o in q.options if o.id.upper() == sel_opt_id), "No answer selected")
         corr_text = next((o.text for o in q.options if o.id.upper() == q.correct_option_id.upper()), "")
 
+        options_list = [{"id": o.id, "text": o.text} for o in q.options]
+
         questions_detail.append(QuestionResultDetail(
             question_id=q.id,
             prompt=q.prompt,
@@ -341,7 +344,8 @@ async def complete_assessment(
             hint_used=hint_used,
             misconception_tag=misc_tag,
             misconception_explanation=misc_exp,
-            explanation=q.explanation
+            explanation=q.explanation,
+            options=options_list
         ))
 
     total_questions = len(questions)
@@ -422,19 +426,18 @@ async def complete_assessment(
             next_concept_title = concept.title
             can_advance = False
 
-    # 6. Generate Gemini AI Guidance (with safe fallback)
-    ai_guidance = await generate_assessment_guidance(
-        concept_id=concept_id,
-        score=correct_count,
-        total_questions=total_questions,
-        percentage=percentage,
-        passed=passed,
-        outcome=rec.outcome.value,
-        missed_questions=missed_questions,
-        misconceptions=list(set(misconceptions_detected))
-    )
+    # 6. Build Initial Authoritative Pedagogical Guidance (Instant, 0ms, Zero Cloud Dependency)
+    initial_guidance = {
+        "summary": f"Assessment completed for {concept.title}. You scored {correct_count} of {total_questions} ({percentage}%).",
+        "strengths": [f"Demonstrated competency in {concept.title}"] if passed else [],
+        "focus_area": f"Reinforce {concept.title} foundational steps." if not passed else "Ready to progress to next concept.",
+        "action_step": f"Continue to {next_concept_title}." if can_advance else f"Review {concept.title} lesson materials and worked examples.",
+        "provider": "sutra_deterministic",
+        "is_fallback": True,
+        "is_generating": False
+    }
 
-    # 7. Persist Assessment Result
+    # 7. Persist Assessment Result Immediately (Atomic DB Commit BEFORE Gemini)
     result_id = f"res-{uuid.uuid4()}"
     crud.save_assessment_result(
         conn=conn,
@@ -448,7 +451,7 @@ async def complete_assessment(
         outcome=rec.outcome.value,
         questions_detail=[qd.model_dump() for qd in questions_detail],
         misconceptions=list(set(misconceptions_detected)),
-        ai_guidance=ai_guidance,
+        ai_guidance=initial_guidance,
         session_id=req.session_id,
         next_concept_id=next_concept_id,
         next_concept_title=next_concept_title,
@@ -474,9 +477,29 @@ async def complete_assessment(
             "passed": passed,
             "outcome": rec.outcome.value,
             "can_advance": can_advance,
-            "ai_provider": ai_guidance.get("provider")
+            "ai_provider": "sutra_deterministic"
         }
     )
+
+    # 9. Asynchronous Gemini Guidance Attempt (Bounded 2.5s Timeout - Never Blocks Saved Result)
+    ai_guidance = initial_guidance
+    try:
+        gemini_task = generate_assessment_guidance(
+            concept_id=concept_id,
+            score=correct_count,
+            total_questions=total_questions,
+            percentage=percentage,
+            passed=passed,
+            outcome=rec.outcome.value,
+            missed_questions=missed_questions,
+            misconceptions=list(set(misconceptions_detected))
+        )
+        gemini_res = await asyncio.wait_for(gemini_task, timeout=2.5)
+        if gemini_res and isinstance(gemini_res, dict):
+            ai_guidance = gemini_res
+            crud.update_assessment_result_guidance(conn, result_id, ai_guidance)
+    except Exception as exc:
+        logger.info(f"Gemini guidance deferred or timed out ({exc}); initial deterministic guidance safely preserved.")
 
     return AssessmentResultResponse(
         id=result_id,
@@ -500,19 +523,96 @@ async def complete_assessment(
     )
 
 
-@router.get("/assessments/results/{concept_id}", response_model=AssessmentResultResponse)
-def get_assessment_result_for_concept(
-    concept_id: str,
+@router.post("/assessments/results/{result_id}/guidance")
+@router.get("/assessments/results/{result_id}/guidance")
+async def generate_result_guidance(
+    result_id: str,
     current_user: Dict[str, Any] = Depends(get_current_user),
     conn=Depends(get_db_connection)
 ):
-    """Retrieves the latest completed assessment result for a concept, enforcing ownership."""
-    learner_id = current_user["id"]
-    res = crud.get_latest_assessment_result(conn, learner_id, concept_id.upper())
+    """Generates and updates Gemini AI personalized guidance for an already saved assessment result."""
+    res = crud.get_assessment_result_by_id(conn, result_id)
     if not res:
-        raise HTTPException(status_code=404, detail=f"No completed assessment result found for concept '{concept_id}'.")
-    concept = get_concept(concept_id.upper())
-    res["concept_title"] = concept.title if concept else concept_id
+        # Check if caller passed a concept ID instead of a result ID
+        res = crud.get_latest_assessment_result(conn, current_user["id"], result_id.upper())
+    if not res:
+        raise HTTPException(status_code=404, detail=f"Assessment result '{result_id}' not found.")
+
+    if current_user["id"] != res["learner_id"] and current_user.get("role") != "teacher":
+        raise HTTPException(status_code=403, detail="Cannot access assessment result of another learner.")
+
+    questions_detail = res.get("questions_detail", [])
+    missed_questions = []
+    for qd in questions_detail:
+        if not qd.get("is_correct"):
+            missed_questions.append({
+                "question_id": qd.get("question_id"),
+                "prompt": qd.get("prompt"),
+                "selected_option_id": qd.get("selected_option_id"),
+                "selected_option_text": qd.get("selected_option_text"),
+                "correct_option_id": qd.get("correct_option_id"),
+                "correct_option_text": qd.get("correct_option_text"),
+                "misconception_tag": qd.get("misconception_tag", "none")
+            })
+
+    ai_guidance = await generate_assessment_guidance(
+        concept_id=res["concept_id"],
+        score=res["score"],
+        total_questions=res["total_questions"],
+        percentage=res["percentage"],
+        passed=res["passed"],
+        outcome=res["outcome"],
+        missed_questions=missed_questions,
+        misconceptions=res.get("misconceptions_detected", [])
+    )
+
+    crud.update_assessment_result_guidance(conn, res["id"], ai_guidance)
+    return ai_guidance
+
+
+@router.get("/assessments/results/{identifier}", response_model=AssessmentResultResponse)
+@router.get("/results/{identifier}", response_model=AssessmentResultResponse)
+@router.get("/assessments/{identifier}/result", response_model=AssessmentResultResponse)
+def get_assessment_result_unified(
+    identifier: str,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    conn=Depends(get_db_connection)
+):
+    """
+    Unified retrieval for assessment results.
+    Accepts:
+    1. Result ID: 'res-...'
+    2. Session ID: 'sess-...'
+    3. Concept ID: 'MATH-C01', 'MATH-C04', etc.
+    Enforces learner ownership and returns structured 404 if not found.
+    """
+    learner_id = current_user["id"]
+    res = None
+
+    if identifier.startswith("res-"):
+        res = crud.get_assessment_result_by_id(conn, identifier)
+    elif identifier.startswith("sess-"):
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM assessment_results WHERE session_id = ?", (identifier,))
+        row = cursor.fetchone()
+        if row:
+            res = crud.get_assessment_result_by_id(conn, row["id"])
+    else:
+        # Treat as concept code
+        res = crud.get_latest_assessment_result(conn, learner_id, identifier.upper())
+
+    if not res:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No completed assessment result found for identifier '{identifier}'."
+        )
+
+    # Ownership check
+    if current_user["id"] != res["learner_id"] and current_user.get("role") != "teacher":
+        raise HTTPException(status_code=403, detail="Cannot access assessment result of another learner.")
+
+    concept = get_concept(res["concept_id"])
+    res["concept_title"] = concept.title if concept else res["concept_id"]
     return AssessmentResultResponse(**res)
 
 
@@ -523,21 +623,7 @@ def get_assessment_result_by_session(
     conn=Depends(get_db_connection)
 ):
     """Retrieves assessment result by session ID, enforcing learner ownership."""
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT id, learner_id FROM assessment_results WHERE session_id = ?",
-        (session_id,)
-    )
-    row = cursor.fetchone()
-    if not row:
-        raise HTTPException(status_code=404, detail=f"No assessment result found for session '{session_id}'.")
-    if current_user["id"] != row["learner_id"] and current_user["role"] != "teacher":
-        raise HTTPException(status_code=403, detail="Cannot access assessment result of another learner.")
-
-    res = crud.get_assessment_result_by_id(conn, row["id"])
-    concept = get_concept(res["concept_id"])
-    res["concept_title"] = concept.title if concept else res["concept_id"]
-    return AssessmentResultResponse(**res)
+    return get_assessment_result_unified(session_id, current_user, conn)
 
 
 @router.get("/assessments/results", response_model=List[AssessmentResultResponse])
