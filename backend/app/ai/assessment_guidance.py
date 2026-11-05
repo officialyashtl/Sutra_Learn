@@ -173,11 +173,25 @@ async def generate_assessment_guidance(
             system_instruction=system_instruction
         )
 
-        response = await adapter._client.aio.models.generate_content(
-            model=adapter.model_id,
-            contents=user_prompt,
-            config=config
-        )
+        models_to_try = [adapter.model_id]
+        for m in ["gemini-3.1-flash-lite", "gemini-flash-lite-latest", "gemini-2.5-flash"]:
+            if m not in models_to_try:
+                models_to_try.append(m)
+
+        response = None
+        actual_model = adapter.model_id
+        for m_candidate in models_to_try:
+            try:
+                response = await adapter._client.aio.models.generate_content(
+                    model=m_candidate,
+                    contents=user_prompt,
+                    config=config
+                )
+                if response and response.text:
+                    actual_model = m_candidate
+                    break
+            except Exception as e_cand:
+                logger.warning(f"Assessment guidance candidate {m_candidate} hit: {e_cand}")
 
         duration_ms = round((time.time() - t0) * 1000, 2)
         raw_text = response.text.strip() if response and response.text else ""
@@ -213,7 +227,7 @@ async def generate_assessment_guidance(
                 "focus_area": parsed.get("focus_area", ""),
                 "action_step": parsed.get("action_step", ""),
                 "provider": "Google Gemini",
-                "model": adapter.model_id,
+                "model": actual_model,
                 "is_fallback": False,
                 "latency_ms": duration_ms
             }
