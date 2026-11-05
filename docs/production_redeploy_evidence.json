@@ -1,0 +1,270 @@
+{
+  "timestamp": "2026-11-05T03:13:26.000524+00:00",
+  "backend_url": "https://sutra-learn-api.onrender.com",
+  "frontend_url": "https://sutralearn.vercel.app",
+  "git_commit": "b5799ba",
+  "total_requests": 18,
+  "successful_requests": 18,
+  "failed_requests": 0,
+  "checks": {
+    "vercel_index_html": {
+      "status": "PASS",
+      "detail": {
+        "status_code": 200,
+        "has_root_div": true,
+        "has_asset_bundle": true
+      }
+    },
+    "vercel_spa_routing": {
+      "status": "PASS",
+      "detail": "SPA route /student/tutor returns 200 index.html"
+    },
+    "render_backend_health": {
+      "status": "PASS",
+      "detail": {
+        "status": "healthy",
+        "service": "sutra-learn-api",
+        "version": "0.1.0",
+        "database_mode": "wal"
+      }
+    },
+    "render_gemini_configured": {
+      "status": "PASS",
+      "detail": {
+        "operating_mode": "cloud",
+        "gemini_provider": {
+          "provider_id": "gemini",
+          "display_name": "Google Gemini API",
+          "provider_type": "gemini",
+          "configured": true,
+          "enabled": true,
+          "model_id": "gemini-flash-lite-latest",
+          "health_status": "AVAILABLE",
+          "last_success_at": null,
+          "last_failure_at": null,
+          "failure_count": 0,
+          "last_error": null,
+          "last_latency_ms": null,
+          "circuit_state": "CLOSED"
+        }
+      }
+    },
+    "auth_login_student": {
+      "status": "PASS",
+      "detail": {
+        "user_id": "student-01",
+        "name": "Aarav Sharma",
+        "role": "student",
+        "redirect_to": "/student/home"
+      }
+    },
+    "tutor_session_creation": {
+      "status": "PASS",
+      "detail": {
+        "id": "0cb68abe-cb2a-4bf5-8c91-7abd723a130e",
+        "owner_id": "student-01",
+        "owner_role": "student",
+        "conversation_type": "tutor",
+        "title": "Production E2E Session",
+        "concept_id": "MATH-C01",
+        "created_at": "2026-11-05T03:13:30.312288+00:00",
+        "updated_at": "2026-11-05T03:13:30.312292+00:00",
+        "messages": []
+      }
+    },
+    "all_six_tutor_modes_gemini": {
+      "status": "PASS",
+      "detail": {
+        "socratic": {
+          "mode_label": "Guided Learning",
+          "duration_ms": 1421.06,
+          "provider": "Google Gemini",
+          "model": "gemini-flash-lite-latest",
+          "explanation_length": 518,
+          "hints_count": 2,
+          "success": true
+        },
+        "worked_example": {
+          "mode_label": "Worked Example",
+          "duration_ms": 17647.23,
+          "provider": "Google Gemini",
+          "model": "gemini-flash-lite-latest",
+          "explanation_length": 1407,
+          "hints_count": 2,
+          "success": true
+        },
+        "practice": {
+          "mode_label": "Practice Question",
+          "duration_ms": 5861.9,
+          "provider": "Google Gemini",
+          "model": "gemini-flash-lite-latest",
+          "explanation_length": 407,
+          "hints_count": 2,
+          "success": true
+        },
+        "check_work": {
+          "mode_label": "Check My Work",
+          "duration_ms": 10847.47,
+          "provider": "Google Gemini",
+          "model": "gemini-flash-lite-latest",
+          "explanation_length": 793,
+          "hints_count": 2,
+          "success": true
+        },
+        "revision": {
+          "mode_label": "Quick Revision",
+          "duration_ms": 3836.5,
+          "provider": "Google Gemini",
+          "model": "gemini-flash-lite-latest",
+          "explanation_length": 1578,
+          "hints_count": 2,
+          "success": true
+        },
+        "prerequisites": {
+          "mode_label": "Prerequisites",
+          "duration_ms": 23349.09,
+          "provider": "Google Gemini",
+          "model": "gemini-flash-lite-latest",
+          "explanation_length": 1763,
+          "hints_count": 2,
+          "success": true
+        }
+      }
+    },
+    "session_messages_persistence": {
+      "status": "PASS",
+      "detail": {
+        "session_id": "0cb68abe-cb2a-4bf5-8c91-7abd723a130e",
+        "message_count": 12,
+        "title": null
+      }
+    },
+    "session_list_retrieval": {
+      "status": "PASS",
+      "detail": {
+        "total_sessions_count": 2,
+        "new_session_present": true
+      }
+    },
+    "clear_and_restart_reset": {
+      "status": "PASS",
+      "detail": {
+        "reset_response": {
+          "status": "success",
+          "conversation_id": "0cb68abe-cb2a-4bf5-8c91-7abd723a130e",
+          "cleared_messages_count": 12
+        },
+        "remaining_messages": 0,
+        "container_preserved": true
+      }
+    },
+    "multi_tenant_isolation_403": {
+      "status": "PASS",
+      "detail": {
+        "learner_b_probe_status": 403,
+        "rejection_detail": "{\"detail\":\"Forbidden: You cannot access another learner's conversation.\"}"
+      }
+    }
+  },
+  "tutor_modes_tested": {
+    "socratic": {
+      "mode_label": "Guided Learning",
+      "duration_ms": 1421.06,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "explanation_length": 518,
+      "hints_count": 2,
+      "success": true
+    },
+    "worked_example": {
+      "mode_label": "Worked Example",
+      "duration_ms": 17647.23,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "explanation_length": 1407,
+      "hints_count": 2,
+      "success": true
+    },
+    "practice": {
+      "mode_label": "Practice Question",
+      "duration_ms": 5861.9,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "explanation_length": 407,
+      "hints_count": 2,
+      "success": true
+    },
+    "check_work": {
+      "mode_label": "Check My Work",
+      "duration_ms": 10847.47,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "explanation_length": 793,
+      "hints_count": 2,
+      "success": true
+    },
+    "revision": {
+      "mode_label": "Quick Revision",
+      "duration_ms": 3836.5,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "explanation_length": 1578,
+      "hints_count": 2,
+      "success": true
+    },
+    "prerequisites": {
+      "mode_label": "Prerequisites",
+      "duration_ms": 23349.09,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "explanation_length": 1763,
+      "hints_count": 2,
+      "success": true
+    }
+  },
+  "gemini_inference_samples": [
+    {
+      "mode": "socratic",
+      "duration_ms": 1421.06,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "snippet": "Hello there! It is wonderful to work with you today. Solving equations with integers is like keeping a seesaw perfectly balanced\u2014whatever we..."
+    },
+    {
+      "mode": "worked_example",
+      "duration_ms": 17647.23,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "snippet": "Hello again! I love how you are diving right into the next problem. Let's work through solving this equation together, step by step, keeping..."
+    },
+    {
+      "mode": "practice",
+      "duration_ms": 5861.9,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "snippet": "Hello there! I am so glad you're ready to practice. Working with linear equations is a fantastic way to master your integer arithmetic. \n\nLe..."
+    },
+    {
+      "mode": "check_work",
+      "duration_ms": 10847.47,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "snippet": "Hello there! You are doing fantastic work by checking your steps\u2014that is the mark of a true mathematician. Let's look at where our seesaw mi..."
+    },
+    {
+      "mode": "revision",
+      "duration_ms": 3836.5,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "snippet": "Hello again! You are asking a brilliant question. Mastering transposition is like learning the secret shortcuts to keeping our algebraic see..."
+    },
+    {
+      "mode": "prerequisites",
+      "duration_ms": 23349.09,
+      "provider": "Google Gemini",
+      "model": "gemini-flash-lite-latest",
+      "snippet": "Hello there! It is wonderful that you are taking a step back to look at the big picture. Checking your foundational tools is a brilliant hab..."
+    }
+  ],
+  "all_passed": true
+}
