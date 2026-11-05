@@ -949,23 +949,7 @@ export function StudentTutor({
                         marginBottom: '4px',
                       }}
                     >
-                      <span>{isUser ? 'You (Learner)' : 'SUTRA AI • Grounded Tutor'}</span>
-                      {!isUser && m.provider_metadata && (
-                        <span
-                          style={{
-                            fontSize: '9px',
-                            padding: '1px 6px',
-                            borderRadius: '4px',
-                            backgroundColor: m.provider_metadata.is_fallback ? 'var(--surface-warm)' : '#E8F5E9',
-                            color: m.provider_metadata.is_fallback ? 'var(--sutra-mocha)' : '#2E7D32',
-                            border: '1px solid var(--border-subtle)',
-                            textTransform: 'none',
-                            fontWeight: 600,
-                          }}
-                        >
-                          {m.provider_metadata.provider || 'SUTRA AI'} {m.provider_metadata.model ? `(${m.provider_metadata.model})` : ''}
-                        </span>
-                      )}
+                      <span>{isUser ? 'You (Learner)' : 'SUTRA AI • GROUNDED TUTOR'}</span>
                     </div>
 
                     <div
