@@ -277,11 +277,13 @@ class MathematicalValidator:
             return False
 
     @classmethod
-    def validate_step_consistency(cls, text: str) -> Dict[str, Any]:
+    def validate_step_consistency(cls, text: str, mode: Optional[str] = None) -> Dict[str, Any]:
         """
         Extracts equation and arithmetic lines from text and verifies that:
-        1. All consecutive linear equations solve to the same root x*.
+        1. All consecutive linear equations solve to the same root x* (when in single-problem derivation mode).
         2. Explicit arithmetic assertions (e.g. 10 - 2 = 8) are accurate.
+        3. Pedagogical awareness for 'check_work', 'revision', and 'prerequisites' modes where student errors
+           or multiple distinct examples are naturally discussed.
         """
         lines = text.split("\n")
         detected_equations = []
@@ -289,16 +291,25 @@ class MathematicalValidator:
         # 1. Check basic arithmetic claims (e.g. "15 - 5 = 10" or "4 * 5 = 20")
         arith_pattern = re.compile(r'^\s*([+-]?\d+(?:\.\d+)?)\s*([+\-*/×÷−])\s*([+-]?\d+(?:\.\d+)?)\s*=\s*([+-]?\d+(?:\.\d+)?)\s*$')
 
+        # Strict linear equation pattern: requires a standalone single variable letter (e.g. x, y, z)
+        # Avoids matching contractions ('s, 't) or english words (is, as, let's, step's)
+        eq_pattern = re.compile(
+            r'(?:^|[^\w\'])([+-]?\s*\d*\s*[a-zA-Z]\b\s*(?:[+-]\s*\d+)?\s*=\s*[+-]?\s*(?:\d*\s*[a-zA-Z]\b\s*[+-]\s*)?\d+)(?:[^\w\']|$)'
+        )
+
         for line in lines:
             line_clean = line.strip().replace("−", "-").replace("×", "*").replace("÷", "/")
-            if len(line_clean) > 90:
+            if len(line_clean) > 120:
                 continue
 
             # Strip markdown bullets or numbers like "1. ", "- "
             clean_expr = re.sub(r'^[0-9]+[\.\)]\s*|^\s*[-*•]\s*', '', line_clean).strip()
+            # Strip step labels
+            clean_math = re.sub(r'^(?:Step\s*\d+:?|Line\s*\d+:?|Therefore,?\s*|So,?\s*|Hence,?\s*)', '', clean_expr, flags=re.IGNORECASE).strip()
+            clean_math = clean_math.replace("$", "").strip()
 
             # Check explicit simple arithmetic equality
-            match = arith_pattern.match(clean_expr)
+            match = arith_pattern.match(clean_math)
             if match:
                 n1 = float(match.group(1))
                 op = match.group(2)
@@ -328,13 +339,25 @@ class MathematicalValidator:
                     }
 
             # Check linear equations containing variables
-            if "=" in line_clean and re.search(r'[a-zA-Z]', line_clean):
-                eq_match = re.search(r'([+-]?\s*\d*[a-zA-Z]?\s*[+-]?\s*\d*\s*=\s*[+-]?\s*\d*[a-zA-Z]?\s*[+-]?\s*\d*)', line_clean)
+            if "=" in clean_math and re.search(r'(?<![a-zA-Z\'])[a-zA-Z]\b', clean_math):
+                eq_match = eq_pattern.search(clean_math)
                 if eq_match:
                     eq_text = eq_match.group(1).strip()
                     sol = cls.parse_linear_equation(eq_text)
                     if sol is not None:
                         detected_equations.append((eq_text, sol))
+
+        mode_norm = (mode or "").lower().replace("-", "_")
+        # In check_work, revision, and prerequisites, the tutor naturally compares student errors or gives diverse examples
+        is_comparative_or_multi_example = any(
+            k in mode_norm for k in ("check_work", "check_my_work", "revision", "prerequisite")
+        )
+        if is_comparative_or_multi_example:
+            return {
+                "valid": True,
+                "verified_steps": len(detected_equations),
+                "reason": f"Mode '{mode}' verified for arithmetic accuracy; allows comparative/illustrative equation diversity."
+            }
 
         if len(detected_equations) < 2:
             return {

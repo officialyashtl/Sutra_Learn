@@ -113,7 +113,7 @@ class AIOrchestrator:
 
                 # STATE: VALIDATING_OUTPUT
                 answer_text = raw_res.get("answer", "")
-                math_val = MathematicalValidator.validate_step_consistency(answer_text)
+                math_val = MathematicalValidator.validate_step_consistency(answer_text, mode=req.mode)
                 if not math_val["valid"]:
                     logger.warning(
                         f"[{request_id}] Mathematical step validation failure: {math_val.get('reason')}. "

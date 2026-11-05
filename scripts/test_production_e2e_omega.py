@@ -49,7 +49,7 @@ results = {
     "timestamp": datetime.now(timezone.utc).isoformat(),
     "backend_url": BACKEND_URL,
     "frontend_url": FRONTEND_URL,
-    "git_commit": "01fc52c",
+    "git_commit": "b5799ba",
     "total_requests": 0,
     "successful_requests": 0,
     "failed_requests": 0,
@@ -243,18 +243,45 @@ def main():
                     "concept_id": "MATH-C01",
                     "mode": mode_id,
                     "conversation_id": session_id
-                }
+                },
+                timeout=120.0
             )
             duration_ms = round((time.time() - t0) * 1000, 2)
             if chat_resp.status_code == 200:
-                results["successful_requests"] += 1
                 chat_data = chat_resp.json()
-                explanation = chat_data.get("explanation") or chat_data.get("response") or ""
                 prov_meta = chat_data.get("provider_metadata") or {}
                 prov_name = prov_meta.get("provider") or chat_data.get("provider") or "Unknown"
+                is_fallback = prov_meta.get("is_fallback", False)
+                
+                # If Google hit transient 503 high demand spike, retry once after brief pause
+                if is_fallback or prov_name != "Google Gemini":
+                    time.sleep(3.0)
+                    results["total_requests"] += 1
+                    t0_retry = time.time()
+                    retry_resp = client.post(
+                        f"{BACKEND_URL}/api/v1/tutor/chat",
+                        headers=headers_a,
+                        json={
+                            "message": prompt_text,
+                            "concept_id": "MATH-C01",
+                            "mode": mode_id,
+                            "conversation_id": session_id
+                        },
+                        timeout=120.0
+                    )
+                    if retry_resp.status_code == 200:
+                        chat_resp = retry_resp
+                        chat_data = chat_resp.json()
+                        duration_ms = round((time.time() - t0_retry) * 1000, 2)
+                        prov_meta = chat_data.get("provider_metadata") or {}
+                        prov_name = prov_meta.get("provider") or chat_data.get("provider") or "Unknown"
+                        is_fallback = prov_meta.get("is_fallback", False)
+
+                results["successful_requests"] += 1
+                explanation = chat_data.get("answer") or chat_data.get("explanation") or chat_data.get("response") or ""
                 model_used = prov_meta.get("model") or chat_data.get("model") or "Unknown"
                 
-                is_valid_resp = len(explanation) > 50
+                is_valid_resp = len(explanation) > 50 and not is_fallback and prov_name == "Google Gemini"
                 results["tutor_modes_tested"][mode_id] = {
                     "mode_label": mode_label,
                     "duration_ms": duration_ms,
@@ -271,7 +298,7 @@ def main():
                     "model": model_used,
                     "snippet": explanation[:140] + "..."
                 })
-                print(f"   [PASS] {mode_label} returned {len(explanation)} chars in {duration_ms}ms (Provider: {prov_name}, Model: {model_used})")
+                print(f"   [{'PASS' if is_valid_resp else 'FAIL'}] {mode_label} returned {len(explanation)} chars in {duration_ms}ms (Provider: {prov_name}, Model: {model_used})")
                 if not is_valid_resp:
                     all_modes_ok = False
             else:
