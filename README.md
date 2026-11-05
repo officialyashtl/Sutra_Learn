@@ -5,8 +5,8 @@
 **Backend API Deployment:** [https://sutra-learn-api.onrender.com](https://sutra-learn-api.onrender.com)  
 **Repository:** [https://github.com/officialyashtl/Sutra_Learn](https://github.com/officialyashtl/Sutra_Learn)
 
-[![Backend Tests: 35/35 Passing](https://img.shields.io/badge/Backend%20Tests-35%2F35%20Passing-success)](docs/testing-guide.md)
-[![E2E Scenarios: 10/10 Passing](https://img.shields.io/badge/E2E%20Scenarios-10%2F10%20Passing-success)](docs/testing-guide.md)
+[![Backend Tests: 46/46 Passing](https://img.shields.io/badge/Backend%20Tests-46%2F46%20Passing-success)](docs/TESTING_AND_VERIFICATION.md)
+[![E2E Scenarios: 10/10 Passing](https://img.shields.io/badge/E2E%20Scenarios-10%2F10%20Passing-success)](scripts/verify_rectification_matrix.py)
 [![Linter: Oxlint Clean](https://img.shields.io/badge/Linter-0%20Errors%200%20Warnings-blue)](frontend/)
 [![TypeScript: Clean Build](https://img.shields.io/badge/TypeScript-0%20Errors-brightgreen)](frontend/)
 [![Architecture: Dual Portal](https://img.shields.io/badge/Architecture-Unbreachable%20Dual%20Portal-informational)](docs/architecture-current.md)
@@ -122,9 +122,14 @@ Open browser at `http://127.0.0.1:5173`.
 
 ## 5. Verification & Test Execution
 
-### Backend Pytest Suite (35/35 Passing in 1.76s)
+### Backend Pytest Suite (46/46 Passing in 27.96s)
 ```powershell
 pytest backend/tests -v
+```
+
+### Rectification & Edge-Case Verification (10/10 Passing)
+```powershell
+python scripts/verify_rectification_matrix.py
 ```
 
 ### Hermetic E2E Verification (14/14 Stages Passing, Exit Code 0)
@@ -157,7 +162,23 @@ npm --prefix frontend run build    # tsc -b && vite build: clean production bund
 
 ---
 
-## 7. Comprehensive Documentation Index
+## 7. CodeKernel '26 Final Submission Package
+
+- [Submission Overview & Executive Pitch](docs/SUBMISSION_OVERVIEW.md)
+- [Complete Product Specification](docs/PRODUCT_SPECIFICATION.md)
+- [System Architecture & Flowchart](docs/TECHNICAL_ARCHITECTURE.md)
+- [End-to-End Product Walkthrough](docs/PRODUCT_WALKTHROUGH.md)
+- [Judge Demonstration Scripts (3, 5 & 7-min)](docs/DEMO_SCRIPT.md)
+- [Testing & Quality Verification Dossier](docs/TESTING_AND_VERIFICATION.md)
+- [Innovation & Technical Differentiation](docs/INNOVATION_AND_DIFFERENTIATION.md)
+- [Judge-Level Technical Defensibility & Q&A](docs/JUDGE_QA.md)
+- [Submission Evidence & Screenshot Checklist](docs/SUBMISSION_EVIDENCE_CHECKLIST.md)
+- [Local Setup, Execution & Handover Guide](docs/SETUP_AND_HANDOVER.md)
+- [Definitive Final Submission Audit](docs/FINAL_SUBMISSION_AUDIT.md)
+
+---
+
+## 8. Comprehensive Engineering Documentation Index
 
 - [Current Architecture Analysis](docs/architecture-current.md)
 - [Target Production Architecture](docs/architecture-target.md)
