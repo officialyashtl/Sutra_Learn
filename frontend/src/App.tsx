@@ -388,7 +388,9 @@ export function App() {
 
       if (res.ok) {
         const recData: Recommendation = await res.json();
-        setActiveRecommendation(recData);
+        if (!isAssessmentActive) {
+          setActiveRecommendation(recData);
+        }
         void syncStudentData(currentLearner.id, authToken);
       }
     } catch (err) {
@@ -635,6 +637,7 @@ export function App() {
                 authToken={authToken}
                 onBack={() => navigate('/student/home')}
                 onCompleteEvaluation={(cId) => void handleCompleteEvaluation(cId)}
+                onOpenLesson={(cId) => void handleOpenLesson(cId)}
               />
             )}
 

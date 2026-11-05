@@ -53,6 +53,29 @@ CREATE TABLE IF NOT EXISTS assessment_sessions (
     FOREIGN KEY (learner_id) REFERENCES learners(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS assessment_results (
+    id TEXT PRIMARY KEY,
+    session_id TEXT,
+    learner_id TEXT NOT NULL,
+    concept_id TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    total_questions INTEGER NOT NULL,
+    percentage REAL NOT NULL,
+    passed INTEGER NOT NULL DEFAULT 1,
+    outcome TEXT NOT NULL,
+    next_concept_id TEXT,
+    next_concept_title TEXT,
+    can_advance INTEGER NOT NULL DEFAULT 1,
+    questions_detail_json TEXT NOT NULL,
+    misconceptions_json TEXT,
+    ai_guidance_json TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (learner_id) REFERENCES learners(id) ON DELETE CASCADE,
+    FOREIGN KEY (session_id) REFERENCES assessment_sessions(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_assessment_results_learner_concept ON assessment_results(learner_id, concept_id, created_at);
+
 CREATE TABLE IF NOT EXISTS attempts (
     id TEXT PRIMARY KEY, -- Client-generated UUID for idempotency
     session_id TEXT,
@@ -133,7 +156,6 @@ CREATE TABLE IF NOT EXISTS system_audit_logs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_audit_category ON system_audit_logs(event_category, created_at);
-CREATE INDEX IF NOT EXISTS idx_audit_correlation ON system_audit_logs(correlation_id);
 
 CREATE TABLE IF NOT EXISTS ai_conversations (
     id TEXT PRIMARY KEY,

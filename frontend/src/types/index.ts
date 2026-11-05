@@ -311,5 +311,64 @@ export interface SpacedRetrievalQueue {
   generated_at: string;
 }
 
+export interface QuestionResultDetail {
+  question_id: string;
+  prompt: string;
+  equation_display?: string | null;
+  difficulty: number;
+  cognitive_demand: string;
+  selected_option_id: string;
+  selected_option_text: string;
+  correct_option_id: string;
+  correct_option_text: string;
+  is_correct: boolean;
+  hint_used: boolean;
+  misconception_tag?: string | null;
+  misconception_explanation?: string | null;
+  explanation: string;
+  options: Option[];
+}
+
+export interface AIGuidance {
+  summary: string;
+  strengths: string[];
+  focus_area: string;
+  action_step: string;
+  provider: string;
+  is_fallback: boolean;
+}
+
+export interface AssessmentResultResponse {
+  id: string;
+  session_id?: string | null;
+  learner_id: string;
+  concept_id: string;
+  concept_title: string;
+  score: number;
+  total_questions: number;
+  percentage: number;
+  passed: boolean;
+  outcome: string;
+  next_concept_id?: string | null;
+  next_concept_title?: string | null;
+  can_advance: boolean;
+  weak_concepts: string[];
+  misconceptions_detected: string[];
+  questions_detail: QuestionResultDetail[];
+  ai_guidance: AIGuidance;
+  created_at: string;
+}
+
+export interface AssessmentSubmissionPayload {
+  concept_id: string;
+  session_id?: string | null;
+  submissions: Array<{
+    question_id: string;
+    selected_option_id: string;
+    hint_used?: boolean;
+    client_timestamp?: string;
+  }>;
+}
+
 
 

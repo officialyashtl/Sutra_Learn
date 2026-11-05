@@ -74,6 +74,15 @@ def record_attempt(
     # Ensure learner exists
     get_or_create_learner(conn, learner_id)
 
+    # Ensure session exists if session_id is provided
+    if session_id:
+        cursor.execute("SELECT id FROM assessment_sessions WHERE id = ?", (session_id,))
+        if not cursor.fetchone():
+            cursor.execute(
+                "INSERT OR IGNORE INTO assessment_sessions (id, learner_id, concept_id, status) VALUES (?, ?, ?, 'active')",
+                (session_id, learner_id, concept_id)
+            )
+
     cursor.execute(
         """
         INSERT INTO attempts (
@@ -876,5 +885,251 @@ def delete_ai_conversation(
     )
     conn.commit()
     return cursor.rowcount > 0
+
+
+def save_assessment_result(
+    conn: sqlite3.Connection,
+    result_id: str,
+    learner_id: str,
+    concept_id: str,
+    score: int,
+    total_questions: int,
+    percentage: float,
+    passed: bool,
+    outcome: str,
+    questions_detail: List[Dict[str, Any]],
+    misconceptions: List[str],
+    ai_guidance: Dict[str, Any],
+    session_id: Optional[str] = None,
+    next_concept_id: Optional[str] = None,
+    next_concept_title: Optional[str] = None,
+    can_advance: bool = True
+) -> str:
+    """
+    Persists complete assessment scoring, question-by-question review,
+    adaptive diagnosis, and AI guidance.
+    """
+    cursor = conn.cursor()
+    get_or_create_learner(conn, learner_id)
+    if session_id:
+        cursor.execute("SELECT id FROM assessment_sessions WHERE id = ?", (session_id,))
+        if not cursor.fetchone():
+            cursor.execute(
+                "INSERT INTO assessment_sessions (id, learner_id, concept_id, status) VALUES (?, ?, ?, 'completed')",
+                (session_id, learner_id, concept_id)
+            )
+
+    cursor.execute(
+        """
+        INSERT INTO assessment_results (
+            id, session_id, learner_id, concept_id, score, total_questions,
+            percentage, passed, outcome, next_concept_id, next_concept_title,
+            can_advance, questions_detail_json, misconceptions_json,
+            ai_guidance_json, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(id) DO UPDATE SET
+            score = excluded.score,
+            total_questions = excluded.total_questions,
+            percentage = excluded.percentage,
+            passed = excluded.passed,
+            outcome = excluded.outcome,
+            next_concept_id = excluded.next_concept_id,
+            next_concept_title = excluded.next_concept_title,
+            can_advance = excluded.can_advance,
+            questions_detail_json = excluded.questions_detail_json,
+            misconceptions_json = excluded.misconceptions_json,
+            ai_guidance_json = excluded.ai_guidance_json
+        """,
+        (
+            result_id,
+            session_id,
+            learner_id,
+            concept_id,
+            score,
+            total_questions,
+            percentage,
+            1 if passed else 0,
+            outcome,
+            next_concept_id,
+            next_concept_title,
+            1 if can_advance else 0,
+            json.dumps(questions_detail),
+            json.dumps(misconceptions),
+            json.dumps(ai_guidance)
+        )
+    )
+
+    if session_id:
+        cursor.execute(
+            """
+            UPDATE assessment_sessions
+            SET status = 'completed', completed_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND learner_id = ?
+            """,
+            (session_id, learner_id)
+        )
+
+    conn.commit()
+    return result_id
+
+
+def get_latest_assessment_result(
+    conn: sqlite3.Connection,
+    learner_id: str,
+    concept_id: str
+) -> Optional[Dict[str, Any]]:
+    """Retrieves the latest completed assessment result for a learner and concept."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT id, session_id, learner_id, concept_id, score, total_questions,
+               percentage, passed, outcome, next_concept_id, next_concept_title,
+               can_advance, questions_detail_json, misconceptions_json,
+               ai_guidance_json, created_at
+        FROM assessment_results
+        WHERE learner_id = ? AND concept_id = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+        """,
+        (learner_id, concept_id)
+    )
+    row = cursor.fetchone()
+    if not row:
+        return None
+
+    concept_title = row["concept_id"]
+    try:
+        from app.content.concepts import get_concept
+        c = get_concept(row["concept_id"])
+        if c:
+            concept_title = c.title
+    except Exception:
+        pass
+
+    return {
+        "id": row["id"],
+        "session_id": row["session_id"],
+        "learner_id": row["learner_id"],
+        "concept_id": row["concept_id"],
+        "concept_title": concept_title,
+        "score": row["score"],
+        "total_questions": row["total_questions"],
+        "percentage": row["percentage"],
+        "passed": bool(row["passed"]),
+        "outcome": row["outcome"],
+        "next_concept_id": row["next_concept_id"],
+        "next_concept_title": row["next_concept_title"],
+        "can_advance": bool(row["can_advance"]),
+        "questions_detail": json.loads(row["questions_detail_json"]) if row["questions_detail_json"] else [],
+        "misconceptions_detected": json.loads(row["misconceptions_json"]) if row["misconceptions_json"] else [],
+        "weak_concepts": json.loads(row["misconceptions_json"]) if row["misconceptions_json"] else [],
+        "ai_guidance": json.loads(row["ai_guidance_json"]) if row["ai_guidance_json"] else {},
+        "completed_at": row["created_at"]
+    }
+
+
+def get_assessment_result_by_id(
+    conn: sqlite3.Connection,
+    result_id: str
+) -> Optional[Dict[str, Any]]:
+    """Retrieves an assessment result by its ID."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT id, session_id, learner_id, concept_id, score, total_questions,
+               percentage, passed, outcome, next_concept_id, next_concept_title,
+               can_advance, questions_detail_json, misconceptions_json,
+               ai_guidance_json, created_at
+        FROM assessment_results
+        WHERE id = ?
+        """,
+        (result_id,)
+    )
+    row = cursor.fetchone()
+    if not row:
+        return None
+
+    concept_title = row["concept_id"]
+    try:
+        from app.content.concepts import get_concept
+        c = get_concept(row["concept_id"])
+        if c:
+            concept_title = c.title
+    except Exception:
+        pass
+
+    return {
+        "id": row["id"],
+        "session_id": row["session_id"],
+        "learner_id": row["learner_id"],
+        "concept_id": row["concept_id"],
+        "concept_title": concept_title,
+        "score": row["score"],
+        "total_questions": row["total_questions"],
+        "percentage": row["percentage"],
+        "passed": bool(row["passed"]),
+        "outcome": row["outcome"],
+        "next_concept_id": row["next_concept_id"],
+        "next_concept_title": row["next_concept_title"],
+        "can_advance": bool(row["can_advance"]),
+        "questions_detail": json.loads(row["questions_detail_json"]) if row["questions_detail_json"] else [],
+        "misconceptions_detected": json.loads(row["misconceptions_json"]) if row["misconceptions_json"] else [],
+        "weak_concepts": json.loads(row["misconceptions_json"]) if row["misconceptions_json"] else [],
+        "ai_guidance": json.loads(row["ai_guidance_json"]) if row["ai_guidance_json"] else {},
+        "completed_at": row["created_at"]
+    }
+
+
+def get_learner_assessment_results(
+    conn: sqlite3.Connection,
+    learner_id: str
+) -> List[Dict[str, Any]]:
+    """Retrieves all assessment results for a learner in reverse chronological order."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT id, session_id, learner_id, concept_id, score, total_questions,
+               percentage, passed, outcome, next_concept_id, next_concept_title,
+               can_advance, questions_detail_json, misconceptions_json,
+               ai_guidance_json, created_at
+        FROM assessment_results
+        WHERE learner_id = ?
+        ORDER BY created_at DESC
+        """,
+        (learner_id,)
+    )
+    rows = cursor.fetchall()
+    results = []
+    for row in rows:
+        concept_title = row["concept_id"]
+        try:
+            from app.content.concepts import get_concept
+            c = get_concept(row["concept_id"])
+            if c:
+                concept_title = c.title
+        except Exception:
+            pass
+
+        results.append({
+            "id": row["id"],
+            "session_id": row["session_id"],
+            "learner_id": row["learner_id"],
+            "concept_id": row["concept_id"],
+            "concept_title": concept_title,
+            "score": row["score"],
+            "total_questions": row["total_questions"],
+            "percentage": row["percentage"],
+            "passed": bool(row["passed"]),
+            "outcome": row["outcome"],
+            "next_concept_id": row["next_concept_id"],
+            "next_concept_title": row["next_concept_title"],
+            "can_advance": bool(row["can_advance"]),
+            "questions_detail": json.loads(row["questions_detail_json"]) if row["questions_detail_json"] else [],
+            "misconceptions_detected": json.loads(row["misconceptions_json"]) if row["misconceptions_json"] else [],
+            "weak_concepts": json.loads(row["misconceptions_json"]) if row["misconceptions_json"] else [],
+            "ai_guidance": json.loads(row["ai_guidance_json"]) if row["ai_guidance_json"] else {},
+            "completed_at": row["created_at"]
+        })
+    return results
 
 

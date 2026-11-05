@@ -4,28 +4,42 @@ Provides concept graph, detailed lessons, and prerequisite gating logic.
 """
 
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Request
 from app.content.concepts import get_all_concepts, get_concept, get_prerequisite_graph
 from app.content.questions import get_questions_by_concept
 from app.db.database import get_db_connection
 from app.db import crud
 from app.schemas import ConceptSummary, ConceptDetail, AssessmentQuestionOut
+from app.auth import verify_access_token
 
 router = APIRouter(prefix="/api/v1", tags=["Curriculum"])
 
 
 @router.get("/concepts", response_model=Dict[str, Any])
 def list_concepts(
+    request: Request,
     x_user_id: Optional[str] = Header(None, alias="x-user-id"),
     conn=Depends(get_db_connection)
 ):
     concepts = get_all_concepts()
     graph = get_prerequisite_graph()
 
+    # Extract user identity from header or Bearer token
+    resolved_user_id = x_user_id
+    if not resolved_user_id:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
+            try:
+                payload = verify_access_token(token)
+                resolved_user_id = payload.get("sub")
+            except Exception:
+                pass
+
     # If user identity provided, calculate prerequisite lock status
     user_progress_map = {}
-    if x_user_id:
-        p_rows = crud.get_learner_progress(conn, x_user_id)
+    if resolved_user_id:
+        p_rows = crud.get_learner_progress(conn, resolved_user_id)
         for r in p_rows:
             user_progress_map[r["concept_id"]] = r["status"]
 
